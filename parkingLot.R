@@ -75,3 +75,21 @@ utilityProps[, utility := as.integer(utility)]
 utilityProps <- merge(utilityProps, coloradoUtilKey, by.x = "utility",
                       by.y = "utilityNum", all.x = T)
 writeRaster(coloradoUtils, "coloradoUtils", format = "GTiff")
+
+
+base <- "c:/users/admcc/Documents/ArcGIS/temp/ZonalSt_"
+arcTables <- vector("list", 16)
+for(i in 1:16){
+  arcTables[[i]] <- read.dbf(paste0(base, i-1, ".dbf"), as.is = T) %>% data.table()
+}
+arcTables <- arcTables %>% rbindlist()
+arcTables[, year := 2000:2015]
+arcTables[, SUM := SUM / 100]
+
+arcTables[, anomolyArc := SUM - mean(SUM[1:14])]
+arcTables[, anomolyArcPer := anomolyArc / SUM]
+
+microbenchmark::microbenchmark(
+temp <- merge(snowApril, snowWS[, c("id", "wsName", "HUC8", "name")], by = "id"),
+temp <- snowWS %>% dplyr::select(id, wsName, HUC8, name) %>% right_join(snowApril),
+temp2 <- snowWS[snowApril, .(id, wsName, HUC8, name, waterYear, year, month, day, value)])

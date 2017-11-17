@@ -7,38 +7,57 @@ scoreUI <- function(id){
   )
 }
 
-scoreMod <- function(input, output, session, rawData, scoreYears){
+scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, name){
   
   yearData <- reactive({
-    rawData() %>% group_by(year) %>% summarise(avg = mean(value)) %>% data.table()  
+    if(rawData()$year %>% length() != rawData()$year %>% unique() %>% length()){
+      rawData() %>% group_by(year) %>% summarise(value = mean(value)) %>% data.table()  
+    }else{
+      rawData()
+    }
+
   })
   
-  
   score_FHI <- reactive({
-    calcBase(yearData(), baseStart = 1980, baseEnd = 2000) %>%
-      calcScoreTable() %>% 
-      calcScore(startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = yearData()) %>%
-      round(digits = 2)
+    if(!is.nan(yearData()[year %in% c(scoreYears()$start:scoreYears()$end), value] %>% mean())){
+      myReturn <- calcBase(yearData(), baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
+        calcScoreTable() %>% 
+        calcScore(startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = yearData()) %>%
+        round(digits = 2)
+    }else{
+      myReturn <- "No data for selected time period"
+    }
+    return(myReturn)
   })
   
   score_quant <- reactive({
     myData <- yearData()
-    if(min(myData$avg)< 0)myData$avg <- myData$avg + abs(min(myData$avg)) + 1
-    fitdistr(myData$avg, "gamma")[[1]] %>%
-      quantileScore(value = mean(myData[year %in% scoreYears()$start:scoreYears()$end, avg]), 
-                    dist = "gamma") %>% round(digits = 2)
+    value <-  mean(myData[year %in% scoreYears()$start:scoreYears()$end, value])
+    if(!is.nan(value)){
+      if(name == "npp"){
+        param <- list(fhat = kde(myData$value))
+        dist <- "kde"
+      }else{
+        if(min(myData$value)< 0)myData$value <- myData$value + abs(min(myData$value)) + 1
+        param <- fitdistr(myData$value, "gamma")[[1]]
+        dist <- "gamma"
+      }
+      myReturn <- quantileScore(value = value, params = param, dist = dist) %>% round(digits = 2)  
+    }else{
+      myReturn <- "No data for selected time period"
+    }
+    myReturn
   })
   
   score_trend <- reactive({
-    trendScore(year = yearData()$year, value = yearData()$avg)
+    trendScore(year = yearData()$year, value = yearData()$value)
   })
   
   output$dataPlot <- renderPlot({
-    ggplot(yearData(), aes(x = year, y = avg)) + geom_point() + stat_smooth()
+    ggplot(yearData(), aes(x = year, y = value)) + geom_point() + stat_smooth()
   })
   
   output$dataInfo <- renderUI({
-
     tagList(
       h5(paste("Your score based on original FHI methods is:", score_FHI())),
       h5(paste("Your score based on quantile methods is:", score_quant())),

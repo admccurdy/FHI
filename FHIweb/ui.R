@@ -61,7 +61,9 @@ shinyUI(
           h3("Tmax"),
           scoreUI("tmax"),
           h4("Tmin"),
-          scoreUI("tmin")
+          scoreUI("tmin"),
+          h4("NPP"), 
+          scoreUI("npp")
         ),
         tabPanel("Insect & Disease",
          tags$style(type = "text/css", "#insectMap {height: calc(100vh - 80px) !important;}"),

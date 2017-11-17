@@ -30,7 +30,7 @@ calcBase <- function(scoreData, baseLength = 40, baseStart = NA, baseEnd = NA, m
   if(baseEnd >= max(scoreData$year)){
     baseEnd <- max(scoreData$year) - 10
   }
-  if(baseEnd - baseStart < 10){
+  if(baseEnd - baseStart < 5){
     warning("Record Not Long Enough NA returned")
     myReturn <- NA
   }else{

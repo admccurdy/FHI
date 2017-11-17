@@ -11,11 +11,22 @@ library(MASS)
 library(rgeos)
 library(sf)
 library(leaflet)
+library(ncdf4)
+library(ks)
 
 source("rScripts/scoreMod.R")
 source("rScripts/FHI_functions.R")
 
 years <- 1980:2016
+precipBase <- tempBase <- list("start" = 1980, "end" = 2000)
+nppBase <- list("start" = 2000, "end" = 2010)
+
+# load static data
+load("data/npp/coloTable.RData") # Loads in as nppTable
+load("data/npp/coloTifs.RData") # Loads in as nppTifs
+load("data/snotel/snoMetrics.RData") # Load in snotel data
+load("data/dayMetAnn/dayMet.RData")
+
 
 
 # Load SQL Connection----------------------------------------------------------
