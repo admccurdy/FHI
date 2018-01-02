@@ -3,8 +3,8 @@ library(rmapshaper)
 library(microbenchmark)
 load("FHIweb/data/CRS.RData")
 
-insectFolder <- "c:/Users/admcc/Documents/ACES/Maps/Insect/"
-insectKey <- fread("c:/Users/admcc/Documents/ACES/FHI/FHIweb/data/inscetKey_2.csv")
+insectFolder <- "f:/Documents/ACES/Maps/Insect/"
+insectKey <- fread("f:/Documents/ACES/FHI/FHIweb/data/inscetKey_2.csv")
 insectKey <- insectKey[!is.na(as.numeric(Code)) & Code != "",]
 insectKey[, Category := ifelse(Category == "", V5, Category)]
 insectKey[, c("V5", "V6") := NULL]
@@ -43,7 +43,7 @@ insectSF <- lapply(1:length(insectSF), FUN = function(x){
   myReturn[, year := insectYears[x]]
 })
 insectSF2 <- rbindlist(insectSF, fill = T)
-save(insectSF2, file = "FHIweb/data/insectData.RData")
+saveRDS(insectSF2, "FHIweb/data/insects/insectData.RDS")
 
 
 insectFrames <- lapply(1:2, FUN = function(x){

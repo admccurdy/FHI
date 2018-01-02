@@ -54,20 +54,24 @@ shinyUI(
          selectInput("endYear", "Select Score End Year", choices = years, selected = max(years))
        ),
      mainPanel(
-      tabsetPanel("FHI Panel",
-        tabPanel("Temp/Precip",
+      tabsetPanel(id = "FHI Panel",
+        tabPanel("Temp and Precip",
           h3("Precip"),
           scoreUI("precip"),
           h3("Tmax"),
           scoreUI("tmax"),
           h4("Tmin"),
           scoreUI("tmin"),
-          h4("NPP"), 
-          scoreUI("npp")
+          h4("NPP"),
+          scoreUI("npp"),
+          uiOutput("snowPlots"),
+          h4("ERC"),
+          scoreUI("erc"),
+          h4("Critical ERC"),
+          scoreUI("critERC")
         ),
         tabPanel("Insect & Disease",
-         tags$style(type = "text/css", "#insectMap {height: calc(100vh - 80px) !important;}"),
-         leafletOutput("insectMap", height = "700px")
+          uiOutput("insectMapOut")
         )
       )
      )

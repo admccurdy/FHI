@@ -3,18 +3,27 @@ scoreUI <- function(id){
   tagList(
     
     plotOutput(ns("dataPlot")),
+    uiOutput(ns("graphOptions")),
     uiOutput(ns("dataInfo"))
   )
 }
 
-scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, name){
+scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, metric){
   
   yearData <- reactive({
+   if("name" %in% names(rawData())){
+     groupCols <- c("year", "name")
+   }else{
+     groupCols <- "year"
+   }
     if(rawData()$year %>% length() != rawData()$year %>% unique() %>% length()){
-      rawData() %>% group_by(year) %>% summarise(value = mean(value)) %>% data.table()  
+      myReturn <- as_tibble(rawData()) %>% 
+        group_by_at(groupCols) %>%
+        summarise(value = mean(value)) %>% data.table()  
     }else{
-      rawData()
+      myReturn <- rawData()
     }
+    return(myReturn)
 
   })
   
@@ -34,7 +43,7 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, na
     myData <- yearData()
     value <-  mean(myData[year %in% scoreYears()$start:scoreYears()$end, value])
     if(!is.nan(value)){
-      if(name == "npp"){
+      if(metric == "npp"){
         param <- list(fhat = kde(myData$value))
         dist <- "kde"
       }else{
@@ -50,11 +59,39 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, na
   })
   
   score_trend <- reactive({
-    trendScore(year = yearData()$year, value = yearData()$value)
+    if("name" %in% names(yearData())){
+      print(metric)
+      temp <- split(yearData(), by = "name")
+      myReturn <-
+        sapply(temp, FUN = function(x)trendScore(year = x$year, value = x$value))
+      myReturn <- data.frame(myReturn)
+    }else{
+      myReturn <- trendScore(year = yearData()$year, value = yearData()$value)  
+    }
+    myReturn <- round(myReturn, 2)
+    print(myReturn)
+    return(myReturn)
   })
   
   output$dataPlot <- renderPlot({
-    ggplot(yearData(), aes(x = year, y = value)) + geom_point() + stat_smooth()
+    if("name" %in% names(yearData())){
+      ggplot(graphData(), aes(x = year, y = value, color = name)) + geom_point() + stat_smooth()  
+    }else{
+      ggplot(yearData(), aes(x = year, y = value)) + geom_point() + stat_smooth()  
+    }
+  })
+  
+  output$graphOptions <- renderUI({
+    if("name" %in% names(yearData())){
+        ns <- session$ns
+        checkboxGroupInput(ns("stationNames"), "Select Stations", 
+                    unique(yearData()$name), selected = unique(yearData()$name))
+    }
+  })
+  
+  graphData <- reactive({
+    myReturn <-yearData()[name %in% input$stationNames, ]
+    return(myReturn)
   })
   
   output$dataInfo <- renderUI({

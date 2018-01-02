@@ -2,7 +2,12 @@ insectsFilter <- reactive({
   returnFrame <- insectSF2[HUC8 == input$watershedSel & year %in% input$startYear:input$endYear,]
   
   st_geometry(returnFrame) <- returnFrame$geometry
-  returnFrame <- st_transform(returnFrame, "+proj=longlat +datum=WGS84")
+  if(nrow(returnFrame) == 0){
+    returnFrame <- NULL
+  }else{
+    returnFrame <- st_transform(returnFrame, "+proj=longlat +datum=WGS84")  
+  }
+  
   return(returnFrame)
 })
 
@@ -51,6 +56,37 @@ precipRaw <- reactive({
   }
 })
 
-aprilSnow <- reactive({
-  myReturn <- snoMetrics[["april"]][snowWS][HUC8 == input$watershedSel,]
+aprilSnowRaw <- reactive({
+  myReturn <- snoMetrics[["april"]][snoTelKey][HUC8 == input$watershedSel,]
 })
+
+maxSnowRaw <- reactive({
+  myReturn <- snoMetrics[["max"]] %>% left_join(snoTelKey) %>% 
+    filter(HUC8 == input$watershedSel) %>% data.table()
+})
+
+ercRaw <- reactive({
+  ercStations <- ercStationKey[HUC8 == input$watershedSel,]
+  myReturn <- coERC[.(ercStations$station),] %>% split(by = "station")
+  myReturn <- lapply(myReturn, FUN = function(x){
+    if(all(ercBase$start:scoreYears()$end %in% unique(x$year))){
+      x
+    }else{
+      NULL
+    }
+  }) %>% rbindlist()
+  myReturn[, monthDay := as.integer(paste0(month, ifelse(nchar(day) < 2, paste0(0, day), day)))]
+  myReturn <- myReturn[monthDay >= 315 & monthDay < 1100,] 
+  setnames(myReturn, "ERC", "value")
+  return(myReturn)
+})
+
+ercProcessed <- reactive({
+  myReturn <- ercRaw() %>% as_tibble() %>% group_by(year, month, day) %>%
+    summarise(value = mean(value))
+  averages <- myReturn %>% group_by(month, day) %>% summarise(value = mean(value))
+  critValue <- quantile(averages$value, .9)
+  myReturn <- myReturn %>% group_by(year) %>% summarise(value = sum(value >= critValue)) %>% data.table()
+})
+
+

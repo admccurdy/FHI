@@ -1,7 +1,7 @@
 
 # Load list of GHCND Station
-load("c:/Users/admcc/Documents/ACES/Data/ghcndStations.RData")
-watershedMap <- st_read("c:/Users/admcc/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp")
+load("F:/Documents/ACES/Data/ghcndStations.RData")
+watershedMap <- st_read("F:/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp")
 
 # Subset into for snowtel and turn into simple feature
 snowTelList <- stationList[state == "CO",]
@@ -52,9 +52,9 @@ snowApril <- snowTelData[day == 1 & month == 4,]
 snoMetrics <- list("april" = snowApril, "max" = snowMax)
 
 snowWS <- merge(snowWS, snowTelList[, c("id", "elevation", "name", "geometry")], by = "id", all.x = T)
-snowTelKey <- snowWS
+snoTelKey <- snowWS
 
 # save files
-save(snowTelKey, file = "fhiweb/data/snotel/snoTelKey.RData")
-save(snoMetrics, file = "fhiweb/data/snotel/snoMetrics.RData")
+saveRDS(snoTelKey, file = "fhiweb/data/snotel/snoTelKey.RDS")
+saveRDS(snoMetrics, file = "fhiweb/data/snotel/snoMetrics.RDS")
 

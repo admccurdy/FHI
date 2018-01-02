@@ -14,10 +14,10 @@ registerDoParallel(cl)
 lcChange <- raster("FHIweb/data/Colo_change/nlcd_2001_to_2011_landcover_1.tif")
 
 # Load Maps--------------------------------------------------------------------
-stateMap <- readOGR("c:/Users/admcc/Documents/ACES/Maps/State/tl_2016_us_state.shp",
+stateMap <- readOGR("F:/Documents/ACES/Maps/State/tl_2016_us_state.shp",
                     layer = "tl_2016_us_state")
 stateMap <- stateMap[stateMap$STATEFP == "08",]
-watershedMap <- readOGR("c:/Users/admcc/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp",
+watershedMap <- readOGR("F:/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp",
                         layer = "wbdhu8_a_co")
 
 currentWaterShed <- 

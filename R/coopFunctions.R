@@ -63,7 +63,7 @@ findKeeperStations <- function(stationList){
 }
 
 loadDLY <- function(IDs){
-    myDir <- "c:/Users/admcc/Documents/ACES/FHI/data/ghcnd_all/"
+    myDir <- "F:/Documents/ACES/FHI/data/ghcnd_all/"
   # stationList <- dir(myDir)
   # dlList <- IDs[!paste0(IDs, ".dly") %in% stationList]
   # if(!is.null(dlList)){

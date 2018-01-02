@@ -12,11 +12,16 @@ library(shiny)
 
 shinyServer(function(input, output) {
   source("rScripts/shinyReactives.R", local = T)
+  source("rscripts/shinyUIOut.R", local = T)
 
-  callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, name = "precip")
-  callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, name = "tmax")
-  callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, name = "tmin")
-  callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, name = "npp")
+  callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
+  callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tmax")
+  callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tmin")
+  callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
+  callModule(scoreMod, "snoApril", rawData = aprilSnowRaw, scoreYears, precipBase, metric = "snoApril")
+  callModule(scoreMod, "snoMax", rawData = maxSnowRaw, scoreYears, precipBase, metric = "snoMax")
+  callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
+  callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
   
   
   # Table of prior tree observations
@@ -46,15 +51,19 @@ shinyServer(function(input, output) {
   
   output$insectMap <- renderLeaflet({
     insectColor = colorFactor("Set1", as.factor(as.character(insectsFilter()$DCA1)))
-    leaflet() %>%
+    myMap <- leaflet() %>%
       addProviderTiles("Esri.NatGeoWorldMap",
                        options = providerTileOptions(noWrap = TRUE)
                      ) %>%
-      addPolygons(data = insectsFilter(),stroke = F,
-                  fillColor = ~insectColor(as.factor(as.character(DCA1))),
-                  fillOpacity = .5) %>%
       addPolylines(data = waterShedSF(), weight = 2, color = "Black") %>%
-      addLegend(pal = insectColor, values = insectsFilter()$DCA1 )
+      leaflet::addLegend(pal = insectColor, values = insectsFilter()$DCA1 )
+    
+    if(!is.null(insectsFilter())){
+      myMap <- myMap %>% addPolygons(data = insectsFilter(),stroke = F,
+                  fillColor = ~insectColor(as.factor(as.character(DCA1))),
+                  fillOpacity = .5)
+    }
+    return(myMap)
   })
   
   # output$insectMap <- renderPlot({

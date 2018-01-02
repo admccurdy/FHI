@@ -12,10 +12,10 @@ cl <- makePSOCKcluster(4)
 registerDoParallel(cl, 4)
 
 # Load Maps--------------------------------------------------------------------
-stateMap <- readOGR("c:/Users/admcc/Documents/ACES/Maps/State/tl_2016_us_state.shp",
+stateMap <- readOGR("F:/Documents/ACES/Maps/State/tl_2016_us_state.shp",
                     layer = "tl_2016_us_state")
 stateMap <- stateMap[stateMap$STATEFP == "08",]
-watershedMap <- readOGR("c:/Users/admcc/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp",
+watershedMap <- readOGR("F:/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp",
                         layer = "wbdhu8_a_co")
 rasterTemplate <- raster("FHIweb/data/dayMetAnn/daymet_v3_prcp_annttl_1980_na.nc4")
 
@@ -50,6 +50,8 @@ for(i in measure){
   })
   dayMetCO[[i]] <- rbindlist(dayMetList)
 }
+
+saveRDS(dayMetCO, "fhiweb/data/dayMetAnn/dayMet.RDS")
 
 precipRFV <- dayMetCO[[1]][grid %in% watershedKey[["14010004"]]]
 precipClear <- dayMetCO[[1]][grid %in% watershedKey[["10190004"]]]

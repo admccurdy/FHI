@@ -29,7 +29,7 @@ proc.time() - ptm
 qry <- sprintf("SELECT * FROM dayMetPrecip WHERE grid in (%s)", vals)
 
 
-"c:/Users/admcc/Documents/ACES/FHI/FHIweb/data/dayMetAnn/csv/tmin.txt"
+"F:/Documents/ACES/FHI/FHIweb/data/dayMetAnn/csv/tmin.txt"
 
 
 myData <- dayMetCO[[3]][grid %in% watershedKey[["14010004"]]]

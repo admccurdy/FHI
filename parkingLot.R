@@ -39,8 +39,8 @@ leaflet() %>%
               fillOpacity = .5) %>%
     addLegend(pal = insectColor, values = temp$DCA1 )
 
-temp <- read.csv("c:/Users/admcc/Documents/ACES/Maps/watershed/Export_Output.csv")
-temp2 <- read.csv("c:/Users/admcc/Documents/ACES/Maps/watershed/Export_Output2.csv")
+temp <- read.csv("F:/Documents/ACES/Maps/watershed/Export_Output.csv")
+temp2 <- read.csv("F:/Documents/ACES/Maps/watershed/Export_Output2.csv")
 
 temp2 <- temp2 %>% group_by(DCA1) %>% summarise(area = sum(F_AREA))
 temp2 <- temp2 %>% data.table()
@@ -77,7 +77,7 @@ utilityProps <- merge(utilityProps, coloradoUtilKey, by.x = "utility",
 writeRaster(coloradoUtils, "coloradoUtils", format = "GTiff")
 
 
-base <- "c:/users/admcc/Documents/ArcGIS/temp/ZonalSt_"
+base <- "F:/Documents/ArcGIS/temp/ZonalSt_"
 arcTables <- vector("list", 16)
 for(i in 1:16){
   arcTables[[i]] <- read.dbf(paste0(base, i-1, ".dbf"), as.is = T) %>% data.table()
@@ -93,3 +93,17 @@ microbenchmark::microbenchmark(
 temp <- merge(snowApril, snowWS[, c("id", "wsName", "HUC8", "name")], by = "id"),
 temp <- snowWS %>% dplyr::select(id, wsName, HUC8, name) %>% right_join(snowApril),
 temp2 <- snowWS[snowApril, .(id, wsName, HUC8, name, waterYear, year, month, day, value)])
+
+temp <- snowMax %>% left_join(snoTelKey) %>% data.table()
+temp <- temp[name %in% c("Independence Pass",  "Mc Clure Pass", "Kiln"),]
+snowMatrix <- sapply(unique(temp$name), FUN = function(x){as.integer(temp[name == x, value])})
+
+names(snowMatrix) <- c("ind", "kiln", "mcp")
+snowMatrix <- snowMatrix %>% as.data.frame()
+rfvModel <- lm(data = snowMatrix[10:37,], formula = ind~., family = "Gamma")
+predict.lm(rfvModel, snowMatrix[1:9,])
+
+temp <- data.table("a" = sample(c(1,2), 100, T), b = runif(100, 1, 100), c = sample(c(3,4), 100, T))
+groupCol <- c("a", "c")
+
+temp %>% group_by_at(groupCol) %>% summarise(value = mean(b))
