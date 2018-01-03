@@ -34,20 +34,21 @@ snoMetrics <- readRDS("data/snotel/snoMetrics.RDS") # Load in snotel data
 dayMetCO <- readRDS("data/dayMetAnn/dayMet.RDS")
 coERC <- readRDS("data/erc/coERC.rds")
 ercStationKey <- readRDS("data/erc/ercStationKey.rds")
-waterShedsCO <- readRDS("data/basedata/waterShedsCO.RDS")
+waterShedsCO <- readRDS("data/baseData/waterShedsCO.RDS")
 gaugeKey <- readRDS("data/streamflow/coGaugeSites.rds")
 dailyDischarge <-readRDS("data/streamflow/coDailyFlow.rds")
-watershedKey <- readRDS("data/basedata/watershedKey.RDS")
+watershedKey <- readRDS("data/baseData/watershedKey.RDS")
 insectSF2 <- readRDS("data/insects/insectData.RDS")
 clipShapeDT <- readRDS("data/insects/clipShapeDT.RDS")
 
 # Load SQL Connection----------------------------------------------------------
-dbiConn <- dbConnect(odbc(), 
-                     driver = "SQL Server",
-                     server = "tcp:foresthealthindex.database.windows.net,1433",
-                     database = "FHI", 
-                     uid = "amccurdy@foresthealthindex",
-                     pwd = "Aces2k12$")
-
-rs <- dbSendQuery(dbiConn, "SELECT * FROM userObs")
-existingData <- dbFetch(rs)
+# dbiConn <- dbConnect(odbc(),
+#                      driver = RSQLServer::SQLServer(),
+#                      server = "tcp:foresthealthindex.database.windows.net,1433",
+#                      database = "FHI",
+#                      uid = "amccurdy@foresthealthindex",
+#                      pwd = "Aces2k12$")
+# 
+# rs <- dbSendQuery(dbiConn, "SELECT * FROM userObs")
+# existingData <- dbFetch(rs)
+# existingData <- data.table(matrix(0, ncol = 5, nrow = 5))

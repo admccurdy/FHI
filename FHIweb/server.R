@@ -12,8 +12,8 @@ library(shiny)
 
 shinyServer(function(input, output) {
   source("rScripts/shinyReactives.R", local = T)
-  source("rscripts/shinyUIOut.R", local = T)
-
+  source("rScripts/shinyUIOut.R", local = T)
+  
   callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
   callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tmax")
   callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tmin")
@@ -26,11 +26,11 @@ shinyServer(function(input, output) {
   
   # Table of prior tree observations
   
-  output$existingTable <- renderTable({
-    returnTable <- treeData()
-    return(returnTable)
-  })
-  
+  # output$existingTable <- renderTable({
+  #   returnTable <- treeData()
+  #   return(returnTable)
+  # })
+  # 
   # Reactive triggered by pressing upload file button
   myData <- eventReactive(input$uploadFile, {
     inFile <- input$dataFile
@@ -41,27 +41,27 @@ shinyServer(function(input, output) {
     myData()
   })
   
-  output$tableDownload <- downloadHandler(
-    filename = "treeObs.csv",
-    content = function(file){
-      write.csv(treeData(), file, row.names = F)
-    },
-    contentType = "text/plain"
-  )
+  # output$tableDownload <- downloadHandler(
+  #   filename = "treeObs.csv",
+  #   content = function(file){
+  #     write.csv(treeData(), file, row.names = F)
+  #   },
+  #   contentType = "text/plain"
+  # )
   
   output$insectMap <- renderLeaflet({
     insectColor = colorFactor("Set1", as.factor(as.character(insectsFilter()$DCA1)))
     myMap <- leaflet() %>%
       addProviderTiles("Esri.NatGeoWorldMap",
                        options = providerTileOptions(noWrap = TRUE)
-                     ) %>%
+      ) %>%
       addPolylines(data = waterShedSF(), weight = 2, color = "Black") %>%
       leaflet::addLegend(pal = insectColor, values = insectsFilter()$DCA1 )
     
     if(!is.null(insectsFilter())){
       myMap <- myMap %>% addPolygons(data = insectsFilter(),stroke = F,
-                  fillColor = ~insectColor(as.factor(as.character(DCA1))),
-                  fillOpacity = .5)
+                                     fillColor = ~insectColor(as.factor(as.character(DCA1))),
+                                     fillOpacity = .5)
     }
     return(myMap)
   })
