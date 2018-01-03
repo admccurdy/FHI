@@ -3,7 +3,6 @@
 .RData
 .Ruserdata
 data/
-FHIweb/data
 npp2015.tif
 MOD17A3.A2014365.h09v05.305.2015092093113.hdf
 rfvPB.dbf
@@ -31,3 +30,4 @@ temp2.csv
 temp2.jpg
 temp3.hdf
 usgsparams.csv
+data.zip
