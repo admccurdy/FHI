@@ -22,14 +22,14 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
      groupCols <- "year"
      myData <- rawData()
    }
-    if(myData$year %>% length() != myData$year %>% unique() %>% length()){
-      myReturn <- as_tibble(myData) %>% 
-        group_by_at(groupCols) %>%
-        summarise(value = mean(value)) %>% data.table()  
-    }else{
-      myReturn <- myData
-    }
-    return(ifelse(any(class(myReturn) == "list"), myReturn, list(myReturn)))
+   if(myData$year %>% length() != myData$year %>% unique() %>% length()){
+     myReturn <- as_tibble(myData) %>% 
+       group_by_at(groupCols) %>%
+       summarise(value = mean(value)) %>% data.table()  
+   }else{
+     myReturn <- myData
+   }
+   return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
 
   })
   
@@ -44,7 +44,6 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
     print(paste("metric", metric))
     myData <- validScoreData()
     if(!length(myData) == 0){
-      print("hello")
       myReturn <- 
         lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
         lapply(calcScoreTable)
@@ -111,8 +110,10 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
     if("name" %in% names(rawData())){
         ns <- session$ns
         myData <- rawData()
+        myData[, base := year %in% basePeriod$start:basePeriod$end]
+        myData <- myData %>% group_by(name) %>% summarise(base = sum(base)) %>% filter(base >= 10)
         checkboxGroupInput(ns("stationNames"), "Select Stations", 
-                    unique(rawData()$name), selected = unique(rawData()$name))
+                    myData$name, selected = myData$name)
     }
   })
   
@@ -123,9 +124,12 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   
   output$dataInfo <- renderUI({
     tagList(
-      h5(paste("Your score based on original FHI methods is:", score_FHI())),
-      h5(paste("Your score based on quantile methods is:", score_quant())),
-      h5(paste("Your score based on trend methods is:", score_trend()))
+      h5("Your score based on original FHI methods is:"),
+      HTML(scoreClean(score_FHI(), names(validScoreData()))),
+      h5("Your score based on quantile methods is:"),
+      HTML(scoreClean(score_quant(), names(validScoreData()))),
+      h5("Your score based on trend methods is:"),
+      HTML(scoreClean(score_trend(), names(validScoreData())))
     )
   })
 }
