@@ -12,27 +12,47 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   
   yearData <- reactive({
    if("name" %in% names(rawData())){
+     req(input$stationNames)
      groupCols <- c("year", "name")
+     myData <- rawData()[name %in% input$stationNames, ]
+     yearData <- myData %>% group_by(name) %>% summarise(min = min(year), max = max(year))
+     myData <- myData[year %in% max(yearData$min):min(yearData$max),]
+     myData <- split(myData, myData$name)
    }else{
      groupCols <- "year"
+     myData <- rawData()
    }
-    if(rawData()$year %>% length() != rawData()$year %>% unique() %>% length()){
-      myReturn <- as_tibble(rawData()) %>% 
+    if(myData$year %>% length() != myData$year %>% unique() %>% length()){
+      myReturn <- as_tibble(myData) %>% 
         group_by_at(groupCols) %>%
         summarise(value = mean(value)) %>% data.table()  
     }else{
-      myReturn <- rawData()
+      myReturn <- myData
     }
-    return(myReturn)
+    return(ifelse(any(class(myReturn) == "list"), myReturn, list(myReturn)))
 
   })
   
+  validScoreData <- reactive({
+    myData <- yearData()
+    validYears <- lapply(myData, "[",, year) %>% 
+      lapply(function(x)all(c(scoreYears()$start:scoreYears()$end) %in% x)) %>% unlist()
+    return(myData[validYears])
+  })
+  
   score_FHI <- reactive({
-    if(!is.nan(yearData()[year %in% c(scoreYears()$start:scoreYears()$end), value] %>% mean())){
-      myReturn <- calcBase(yearData(), baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
-        calcScoreTable() %>% 
-        calcScore(startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = yearData()) %>%
-        round(digits = 2)
+    print(paste("metric", metric))
+    myData <- validScoreData()
+    if(!length(myData) == 0){
+      print("hello")
+      myReturn <- 
+        lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
+        lapply(calcScoreTable)
+      myReturn <- lapply(1:length(myReturn), FUN = function(x){
+        calcScore(scoreTable = myReturn[[x]], startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = myData[[x]]) %>%
+          round(digits = 2)
+      })
+        
     }else{
       myReturn <- "No data for selected time period"
     }
@@ -40,18 +60,33 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   score_quant <- reactive({
-    myData <- yearData()
-    value <-  mean(myData[year %in% scoreYears()$start:scoreYears()$end, value])
-    if(!is.nan(value)){
+    myData <- validScoreData()
+    if(!length(myData) == 0){
+      value <- myData %>% lapply(function(x)x[year %in% scoreYears()$start:scoreYears()$end, value] %>% mean())
       if(metric == "npp"){
-        param <- list(fhat = kde(myData$value))
-        dist <- "kde"
+        param <- myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
+        myDist <- "kde"
       }else{
-        if(min(myData$value)< 0)myData$value <- myData$value + abs(min(myData$value)) + 1
-        param <- fitdistr(myData$value, "gamma")[[1]]
-        dist <- "gamma"
+        if(grepl("temp", metric))myData <- lapply(myData, function(x) x[, value:= value + 273.15])
+        param <- 
+          tryCatch({
+            myData %>% lapply(FUN = function(x)fitdistr(x$value, "gamma")[[1]])
+          }, error = function(e){
+            # print(paste("dist error", e))
+           tryCatch({
+             myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
+            }, error = function(f){
+              print(f)
+              return("Unable to determine quantile")
+            })
+          })
+        myDist <- ifelse(class(param[[1]]) == "list", "kde", 
+                       ifelse(class(param[[1]]) == "numeric", "gamma", "none"))
       }
-      myReturn <- quantileScore(value = value, params = param, dist = dist) %>% round(digits = 2)  
+      myReturn <- 
+          lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
+                   round(digits = 2))  
+        
     }else{
       myReturn <- "No data for selected time period"
     }
@@ -59,38 +94,30 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   score_trend <- reactive({
-    if("name" %in% names(yearData())){
-      print(metric)
-      temp <- split(yearData(), by = "name")
-      myReturn <-
-        sapply(temp, FUN = function(x)trendScore(year = x$year, value = x$value))
-      myReturn <- data.frame(myReturn)
-    }else{
-      myReturn <- trendScore(year = yearData()$year, value = yearData()$value)  
-    }
-    myReturn <- round(myReturn, 2)
-    print(myReturn)
+    myData <- yearData()
+    myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
     return(myReturn)
   })
   
   output$dataPlot <- renderPlot({
-    if("name" %in% names(yearData())){
-      ggplot(graphData(), aes(x = year, y = value, color = name)) + geom_point() + stat_smooth()  
+    if("name" %in% names(graphData())){
+      ggplot(graphData(), aes(x = year, y = value, color = name)) + geom_point() + stat_smooth(method = "loess")  
     }else{
-      ggplot(yearData(), aes(x = year, y = value)) + geom_point() + stat_smooth()  
+      ggplot(graphData(), aes(x = year, y = value)) + geom_point() + stat_smooth(method = "loess")  
     }
   })
   
   output$graphOptions <- renderUI({
-    if("name" %in% names(yearData())){
+    if("name" %in% names(rawData())){
         ns <- session$ns
+        myData <- rawData()
         checkboxGroupInput(ns("stationNames"), "Select Stations", 
-                    unique(yearData()$name), selected = unique(yearData()$name))
+                    unique(rawData()$name), selected = unique(rawData()$name))
     }
   })
   
   graphData <- reactive({
-    myReturn <-yearData()[name %in% input$stationNames, ]
+    myReturn <-rbindlist(yearData())
     return(myReturn)
   })
   

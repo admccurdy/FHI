@@ -1,7 +1,7 @@
 calcScore <- function(startYear, endYear, scoreTable, scoreData){
   if(!is.data.table(scoreData))scoreData <- data.table(scoreData)
   myYear <- startYear:endYear
-  metric <- mean(as.numeric(t(scoreData[year %in% myYear, 2])))
+  metric <- mean(as.numeric(t(scoreData[year %in% myYear, value])))
   score <- metric * scoreTable$m + scoreTable$b 
   score <- ifelse(score > 100, 100 - (score - 100), score)
   return(score)
@@ -34,7 +34,7 @@ calcBase <- function(scoreData, baseLength = 40, baseStart = NA, baseEnd = NA, m
     warning("Record Not Long Enough NA returned")
     myReturn <- NA
   }else{
-    baseData <- as.numeric(t(scoreData[year %in% baseStart:baseEnd, 2]))
+    baseData <- as.numeric(t(scoreData[year %in% baseStart:baseEnd, value]))
     myReturn <- list("mean" = mean(baseData), "sd" = sd(baseData))
   }
   return(myReturn)

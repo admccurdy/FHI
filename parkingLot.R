@@ -107,3 +107,4 @@ temp <- data.table("a" = sample(c(1,2), 100, T), b = runif(100, 1, 100), c = sam
 groupCol <- c("a", "c")
 
 temp %>% group_by_at(groupCol) %>% summarise(value = mean(b))
+

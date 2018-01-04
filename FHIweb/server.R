@@ -14,14 +14,14 @@ shinyServer(function(input, output) {
   source("rScripts/shinyReactives.R", local = T)
   source("rScripts/shinyUIOut.R", local = T)
   
-  callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
-  callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tmax")
-  callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tmin")
-  callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
-  callModule(scoreMod, "snoApril", rawData = aprilSnowRaw, scoreYears, precipBase, metric = "snoApril")
+  # callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
+  # callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tempmax")
+  # callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tempmin")
+  # callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
+  # callModule(scoreMod, "snoApril", rawData = aprilSnowRaw, scoreYears, precipBase, metric = "snoApril")
   callModule(scoreMod, "snoMax", rawData = maxSnowRaw, scoreYears, precipBase, metric = "snoMax")
-  callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
-  callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
+  # callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
+  # callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
   
   
   # Table of prior tree observations
