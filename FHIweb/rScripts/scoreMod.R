@@ -29,8 +29,14 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
    }else{
      myReturn <- myData
    }
-   return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
-
+   myReturn <- if(any(class(myReturn) == "list")) myReturn else list(myReturn)
+   if(metric == "tempmax"){
+     tempSave <<- myReturn
+   }else{
+     snowSave <<- myReturn
+   }
+   # return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
+  return(myReturn)
   })
   
   validScoreData <- reactive({
