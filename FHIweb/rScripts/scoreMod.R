@@ -65,37 +65,7 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   score_quant <- reactive({
-    myData <- validScoreData()
-    if(!length(myData) == 0){
-      value <- myData %>% lapply(function(x)x[year %in% scoreYears()$start:scoreYears()$end, value] %>% mean())
-      if(metric == "npp"){
-        param <- myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
-        myDist <- "kde"
-      }else{
-        if(grepl("temp", metric))myData <- lapply(myData, function(x) x[, value:= value + 273.15])
-        param <- 
-          tryCatch({
-            myData %>% lapply(FUN = function(x)fitdistr(x$value, "gamma")[[1]])
-          }, error = function(e){
-            # print(paste("dist error", e))
-           tryCatch({
-             myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
-            }, error = function(f){
-              print(f)
-              return("Unable to determine quantile")
-            })
-          })
-        myDist <- ifelse(class(param[[1]]) == "list", "kde", 
-                       ifelse(class(param[[1]]) == "numeric", "gamma", "none"))
-      }
-      myReturn <- 
-          lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
-                   round(digits = 2))  
-        
-    }else{
-      myReturn <- "No data for selected time period"
-    }
-    myReturn
+    scorer(validScoreData(), scoreYears()$start:scoreYears()$end, "quant", metric)
   })
   
   score_trend <- reactive({

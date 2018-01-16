@@ -8,13 +8,23 @@ scoreClean <- function(scores, myNames){
                    digits = 0))
 }
 
-scorer <- function(myData, myYear, method, metric){
+scorer <- function(myData, myYears, method, metric){
   if(length(myData) == 0){
     myReturn <- "No data for selected time period"
   }else{
-    value <- myData %>% lapply(function(x)x[year %in% 2015:2015, value] %>% mean())
-    quantFHI(myData, "tempmax", value)
+    value <- myData %>% lapply(function(x)x[year %in% myYears, value] %>% mean())
+    if(method == "quant"){
+      myReturn <- quantFHI(myData, "tempmax", value)  
+    }else if(method == "FHI"){
+      
+    }else if(method == "trend"){
+      
+    }else{
+      myReturn <- "Invalid method selected"
+    }
+    
   }
+  return(myReturn)
 }
 # myData <- copy(tempSave)
 # validYears <- lapply(myData, "[",, year) %>% 
@@ -46,7 +56,8 @@ quantFHI <- function(myData, metric, value){
     }
     myReturn <- 
       lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
-               round(digits = 2))  
+               round(digits = 2))
+    print(myReturn)
     return(myReturn)
 }
 # 
