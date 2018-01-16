@@ -15,7 +15,7 @@ shinyServer(function(input, output) {
   source("rScripts/shinyUIOut.R", local = T)
   
   # callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
-  # callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tempmax")
+  callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tempmax")
   # callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tempmin")
   # callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
   # callModule(scoreMod, "snoApril", rawData = aprilSnowRaw, scoreYears, precipBase, metric = "snoApril")

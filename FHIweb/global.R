@@ -15,6 +15,7 @@ library(dtplyr)
 
 source("rScripts/scoreMod.R")
 source("rScripts/FHI_functions.R")
+source("rScripts/shinyFunctions.R")
 
 years <- 1980:2016
 precipBase <- tempBase <- list("start" = 1980, "end" = 2000)
