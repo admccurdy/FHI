@@ -64,14 +64,19 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
     return(myReturn)
   })
   
+  scoringYears <- reactive({
+    scoreYears()$start:scoreYears()$end
+  })
+  
   score_quant <- reactive({
-    scorer(validScoreData(), scoreYears()$start:scoreYears()$end, "quant", metric)
+    scorer(validScoreData(), scoringYears(), "quant", metric)
   })
   
   score_trend <- reactive({
-    myData <- yearData()
-    myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
-    return(myReturn)
+    scorer(validScoreData(), scoringYears(), "trend", metric)
+    # myData <- yearData()
+    # myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
+    # return(myReturn)
   })
   
   output$dataPlot <- renderPlot({

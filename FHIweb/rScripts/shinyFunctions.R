@@ -18,7 +18,7 @@ scorer <- function(myData, myYears, method, metric){
     }else if(method == "FHI"){
       
     }else if(method == "trend"){
-      
+      myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
     }else{
       myReturn <- "Invalid method selected"
     }
