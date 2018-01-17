@@ -66,6 +66,34 @@ quantFHI <- function(myData, metric, value){
     print(myReturn)
     return(myReturn)
 }
+
+multiStationClean <- function(myData, stations){
+  myData <- myData[name %in% stations, ]
+  yearData <- myData %>% group_by(name) %>% summarise(min = min(year), max = max(year))
+  myData <- myData[year %in% max(yearData$min):min(yearData$max),]
+  myData <- split(myData, myData$name)
+  return(myData)
+}
+
+scoreDataClean <- function(myData, groupCols, scoreYears){
+  if(myData$year %>% length() != myData$year %>% unique() %>% length()){
+    myReturn <- as_tibble(myData) %>% 
+      group_by_at(groupCols) %>%
+      summarise(value = mean(value)) %>% data.table()  
+  }else{
+    myReturn <- myData
+  }
+  myReturn <- if(any(class(myReturn) == "list")) myReturn else list(myReturn)
+  if(metric == "tempmax"){
+    tempSave <<- myReturn
+  }else{
+    snowSave <<- myReturn
+  }
+  validYears <- lapply(myReturn, "[",, year) %>% 
+    lapply(function(x)all(c(scoreYears$start:scoreYears$end) %in% x)) %>% unlist()
+  # return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
+  return(myReturn[validYears])
+}
 # 
 # den <- density(myData[[1]]$value)
 # dat <- data.frame(x = den$x, y = den$y)

@@ -10,58 +10,26 @@ scoreUI <- function(id){
 
 scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, metric){
   
-  yearData <- reactive({
+  validScoreData <- reactive({
    if("name" %in% names(rawData())){
      req(input$stationNames)
      groupCols <- c("year", "name")
-     myData <- rawData()[name %in% input$stationNames, ]
-     yearData <- myData %>% group_by(name) %>% summarise(min = min(year), max = max(year))
-     myData <- myData[year %in% max(yearData$min):min(yearData$max),]
-     myData <- split(myData, myData$name)
+     myData <- multiStationClean(rawData(), input$stationNames)
    }else{
      groupCols <- "year"
      myData <- rawData()
    }
-   if(myData$year %>% length() != myData$year %>% unique() %>% length()){
-     myReturn <- as_tibble(myData) %>% 
-       group_by_at(groupCols) %>%
-       summarise(value = mean(value)) %>% data.table()  
-   }else{
-     myReturn <- myData
-   }
-   myReturn <- if(any(class(myReturn) == "list")) myReturn else list(myReturn)
-   if(metric == "tempmax"){
-     tempSave <<- myReturn
-   }else{
-     snowSave <<- myReturn
-   }
-   # return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
-  return(myReturn)
+   return(scoreDataClean(myData, groupCols, scoreYears()))
   })
   
-  validScoreData <- reactive({
-    myData <- yearData()
-    validYears <- lapply(myData, "[",, year) %>% 
-      lapply(function(x)all(c(scoreYears()$start:scoreYears()$end) %in% x)) %>% unlist()
-    return(myData[validYears])
-  })
+  # validScoreData <- reactive({
+  #   myData <- yearData()
+  # 
+  #   return(myData[validYears])
+  # })
   
   score_FHI <- reactive({
     scorer(validScoreData(), scoringYears(), "FHI", metric, basePeriod)
-    # myData <- validScoreData()
-    # if(!length(myData) == 0){
-    #   myReturn <- 
-    #     lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
-    #     lapply(calcScoreTable)
-    #   myReturn <- lapply(1:length(myReturn), FUN = function(x){
-    #     calcScore(scoreTable = myReturn[[x]], startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = myData[[x]]) %>%
-    #       round(digits = 2)
-    #   })
-    #     
-    # }else{
-    #   myReturn <- "No data for selected time period"
-    # }
-    # return(myReturn)
   })
   
   scoringYears <- reactive({
@@ -99,7 +67,7 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   graphData <- reactive({
-    myReturn <-rbindlist(yearData())
+    myReturn <-rbindlist(validScoreData())
     return(myReturn)
   })
   

@@ -76,5 +76,19 @@ shinyUI(
       )
      )
      )      
-    )
+    ),
+  tabPanel("Method Evaluation",
+           sidebarLayout(
+             sidebarPanel(
+               width = 2,
+               selectInput("methodSel", "Select score method",
+                           choices = c("Tmax", "Tmin", "Precip", "SnowMax", "SnowApril", "NPP",
+                                       "erc", "critERC"))
+             ),
+             mainPanel(id = "methods",
+              h4("Hello")          
+                       
+                       
+             )
+           ))
 ))
