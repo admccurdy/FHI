@@ -8,7 +8,7 @@ scoreClean <- function(scores, myNames){
                    digits = 0))
 }
 
-scorer <- function(myData, myYears, method, metric){
+scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
   if(length(myData) == 0){
     myReturn <- "No data for selected time period"
   }else{
@@ -16,7 +16,13 @@ scorer <- function(myData, myYears, method, metric){
     if(method == "quant"){
       myReturn <- quantFHI(myData, "tempmax", value)  
     }else if(method == "FHI"){
-      
+      myReturn <- 
+        lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
+        lapply(calcScoreTable)
+      myReturn <- lapply(1:length(myReturn), FUN = function(x){
+        calcScore(scoreTable = myReturn[[x]], startYear = min(myYears), endYear = max(myYears), scoreData = myData[[x]]) %>%
+          round(digits = 2)
+      })
     }else if(method == "trend"){
       myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
     }else{

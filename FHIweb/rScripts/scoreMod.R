@@ -47,21 +47,21 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   score_FHI <- reactive({
-    print(paste("metric", metric))
-    myData <- validScoreData()
-    if(!length(myData) == 0){
-      myReturn <- 
-        lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
-        lapply(calcScoreTable)
-      myReturn <- lapply(1:length(myReturn), FUN = function(x){
-        calcScore(scoreTable = myReturn[[x]], startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = myData[[x]]) %>%
-          round(digits = 2)
-      })
-        
-    }else{
-      myReturn <- "No data for selected time period"
-    }
-    return(myReturn)
+    scorer(validScoreData(), scoringYears(), "FHI", metric, basePeriod)
+    # myData <- validScoreData()
+    # if(!length(myData) == 0){
+    #   myReturn <- 
+    #     lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
+    #     lapply(calcScoreTable)
+    #   myReturn <- lapply(1:length(myReturn), FUN = function(x){
+    #     calcScore(scoreTable = myReturn[[x]], startYear = scoreYears()$start, endYear = scoreYears()$end, scoreData = myData[[x]]) %>%
+    #       round(digits = 2)
+    #   })
+    #     
+    # }else{
+    #   myReturn <- "No data for selected time period"
+    # }
+    # return(myReturn)
   })
   
   scoringYears <- reactive({
