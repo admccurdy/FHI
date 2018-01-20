@@ -83,11 +83,14 @@ shinyUI(
                width = 2,
                selectInput("methodSel", "Select score method",
                            choices = c("Tmax", "Tmin", "Precip", "SnowMax", "SnowApril", "NPP",
-                                       "erc", "critERC"))
+                                       "erc", "critERC")),
+               selectInput("yearsSel", "Select the number of years to score on",
+                           choices = 1:10, selected = 5)
              ),
              mainPanel(id = "methods",
-              h4("Hello")          
-                       
+               h3("Tmax"),
+               methodUI("tmax")
+                     
                        
              )
            ))

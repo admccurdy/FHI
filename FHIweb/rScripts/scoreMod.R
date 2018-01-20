@@ -19,14 +19,8 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
      groupCols <- "year"
      myData <- rawData()
    }
-   return(scoreDataClean(myData, groupCols, scoreYears()))
+   return(scoreDataClean(myData, groupCols, scoreYears(), metric))
   })
-  
-  # validScoreData <- reactive({
-  #   myData <- yearData()
-  # 
-  #   return(myData[validYears])
-  # })
   
   score_FHI <- reactive({
     scorer(validScoreData(), scoringYears(), "FHI", metric, basePeriod)

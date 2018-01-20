@@ -4,27 +4,29 @@ scoreClean <- function(scores, myNames){
   }
   returnFrame <- data.frame("Station" = myNames,
                             "Score" = unlist(scores))
-  return(stargazer::stargazer(returnFrame, summary = F, type = "html", rownames = F,
-                   digits = 0))
+  returnFrame <- stargazer::stargazer(returnFrame, summary = F, type = "html", rownames = F,
+                                           digits = 0)
+  return(returnFrame)
 }
 
 scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
-  if(length(myData) == 0){
+  funData <- copy(myData)
+  if(length(funData) == 0){
     myReturn <- "No data for selected time period"
   }else{
-    value <- myData %>% lapply(function(x)x[year %in% myYears, value] %>% mean())
+    value <- funData %>% lapply(function(x)x[year %in% myYears, value] %>% mean())
     if(method == "quant"){
-      myReturn <- quantFHI(myData, "tempmax", value)  
+      myReturn <- quantFHI(funData, metric, value)  
     }else if(method == "FHI"){
       myReturn <- 
-        lapply(myData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
+        lapply(funData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
         lapply(calcScoreTable)
       myReturn <- lapply(1:length(myReturn), FUN = function(x){
-        calcScore(scoreTable = myReturn[[x]], startYear = min(myYears), endYear = max(myYears), scoreData = myData[[x]]) %>%
+        calcScore(scoreTable = myReturn[[x]], startYear = min(myYears), endYear = max(myYears), scoreData = funData[[x]]) %>%
           round(digits = 2)
       })
     }else if(method == "trend"){
-      myReturn <- myData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
+      myReturn <- funData %>% lapply(function(x)trendScore(year = x$year, value = x$value) %>% round(digits = 2))  
     }else{
       myReturn <- "Invalid method selected"
     }
@@ -63,7 +65,6 @@ quantFHI <- function(myData, metric, value){
     myReturn <- 
       lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
                round(digits = 2))
-    print(myReturn)
     return(myReturn)
 }
 
@@ -75,7 +76,7 @@ multiStationClean <- function(myData, stations){
   return(myData)
 }
 
-scoreDataClean <- function(myData, groupCols, scoreYears){
+scoreDataClean <- function(myData, groupCols, scoreYears, metric){
   if(myData$year %>% length() != myData$year %>% unique() %>% length()){
     myReturn <- as_tibble(myData) %>% 
       group_by_at(groupCols) %>%
@@ -92,7 +93,20 @@ scoreDataClean <- function(myData, groupCols, scoreYears){
   validYears <- lapply(myReturn, "[",, year) %>% 
     lapply(function(x)all(c(scoreYears$start:scoreYears$end) %in% x)) %>% unlist()
   # return(if(any(class(myReturn) == "list")) myReturn else list(myReturn))
+  print(validYears)
   return(myReturn[validYears])
+}
+
+methodCalc <- function(myData, scoreYearTable, method, metric, basePeriod = NULL){
+  returnList <- vector("list", length = scoreYearTable %>% nrow())
+  for(i in 1:length(returnList)){
+    years <- scoreYearTable$start[i]:scoreYearTable$end[i]
+    returnList[[i]] <- scorer(myData = myData, myYears = years, method = method,
+                              metric = metric, basePeriod = basePeriod)
+  }
+  returnList <- lapply(returnList, function(x)x %>% unlist() %>% mean()) %>% unlist()
+  returnList <- cbind(scoreYearTable, "value" = (returnList %>% unlist()))
+  return(returnList)
 }
 # 
 # den <- density(myData[[1]]$value)

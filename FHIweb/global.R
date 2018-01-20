@@ -14,6 +14,7 @@ library(ks)
 library(dtplyr)
 
 source("rScripts/scoreMod.R")
+source("rScripts/methodMods.R")
 source("rScripts/FHI_functions.R")
 source("rScripts/shinyFunctions.R")
 
