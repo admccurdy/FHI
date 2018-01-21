@@ -23,7 +23,7 @@ shinyServer(function(input, output) {
   # callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
   # callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
   
-  callModule(methodMod, "tmax", rawData = tmaxRaw, reactive(input$yearsSel), tempBase, metric = "tmax")
+  callModule(methodMod, "tmax", rawData = tmaxRaw, reactive(input$yearsSel), tempBase, metric = "tmax", methodCompare)
   
   # Table of prior tree observations
   

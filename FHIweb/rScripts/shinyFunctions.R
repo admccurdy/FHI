@@ -104,10 +104,15 @@ methodCalc <- function(myData, scoreYearTable, method, metric, basePeriod = NULL
     returnList[[i]] <- scorer(myData = myData, myYears = years, method = method,
                               metric = metric, basePeriod = basePeriod)
   }
+  print(method)
+  print(returnList)
   returnList <- lapply(returnList, function(x)x %>% unlist() %>% mean()) %>% unlist()
   returnList <- cbind(scoreYearTable, "value" = (returnList %>% unlist()))
+  setnames(returnList, "value", method)
   return(returnList)
 }
+
+
 # 
 # den <- density(myData[[1]]$value)
 # dat <- data.frame(x = den$x, y = den$y)

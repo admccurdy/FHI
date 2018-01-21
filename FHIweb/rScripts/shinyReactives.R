@@ -89,4 +89,6 @@ ercProcessed <- reactive({
   myReturn <- myReturn %>% group_by(year) %>% summarise(value = sum(value >= critValue)) %>% data.table()
 })
 
-
+methodCompare <- reactive({
+  list(input$methodSel1, input$methodSel2)
+})

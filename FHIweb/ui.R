@@ -81,9 +81,12 @@ shinyUI(
            sidebarLayout(
              sidebarPanel(
                width = 2,
-               selectInput("methodSel", "Select score method",
-                           choices = c("Tmax", "Tmin", "Precip", "SnowMax", "SnowApril", "NPP",
-                                       "erc", "critERC")),
+               selectInput("methodSel1", "Select score method 1",
+                           choices = list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend"),
+                           selected = "FHI"),
+               selectInput("methodSel2", "Select score method 2",
+                           choices = list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend"),
+                           selected = "Quantile"),
                selectInput("yearsSel", "Select the number of years to score on",
                            choices = 1:10, selected = 5)
              ),

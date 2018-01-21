@@ -1,11 +1,12 @@
 methodUI <- function(id){
   ns <- NS(id)
   tagList(
-    uiOutput(ns("methodComp"))
+    # uiOutput(ns("methodComp"))
+    plotOutput(ns("compareScatter"))
   )
 }
 
-methodMod <- function(input, output, session, rawData, yearInterval, basePeriod, metric){
+methodMod <- function(input, output, session, rawData, yearInterval, basePeriod, metric, methodSel){
   validScoreData <- reactive({
     if("name" %in% names(rawData())){
       groupCols <- c("year", "name")
@@ -19,21 +20,11 @@ methodMod <- function(input, output, session, rawData, yearInterval, basePeriod,
   
   scoreIntervals <- reactive({
     myData <- validScoreData()[[1]]
-    print(myData)
-    print("max")
-    print(max(myData$year))
-    print("min")
-    print(min(myData$year))
-    print("yearInt")
-    print(yearInterval())
     myInterval <- as.numeric(yearInterval())
-    print(myInterval)
     endYears <- seq(from = max(myData$year), to = min(myData$year),
                     by = -myInterval)
-    print(endYears)
     startYears <- seq(from = max(myData$year) - myInterval + 1, to = min(myData$year),
                       by = -myInterval)
-    print(startYears)
     if(length(startYears) < length(endYears)){
       startYears <- c(startYears, rep(NA, (length(endYears) - length(startYears))))
     }
@@ -57,10 +48,22 @@ methodMod <- function(input, output, session, rawData, yearInterval, basePeriod,
     methodCalc(validScoreData(), scoreIntervals(), "trend", metric, basePeriod = basePeriod)
   })
   
+  scoreData <- reactive({
+    merge(methodCalc(validScoreData(), scoreIntervals(), methodSel()[[1]], metric, basePeriod = basePeriod),
+          methodCalc(validScoreData(), scoreIntervals(), methodSel()[[2]], metric, basePeriod = basePeriod),
+          by = c("start", "end"))
+  })
+  
+  output$compareScatter <- renderPlot({
+    myData <- scoreData()
+    print(myData)
+    setnames(myData, c("start", "end", "x", "y"))
+    ggplot(myData, aes(x, y)) + geom_point() + xlab(methodSel()[[1]]) + ylab(methodSel()[[2]]) + xlim(c(0,100)) + ylim(c(0,100))
+  })
+  
   output$methodComp <- renderUI({
-    tagList(
-      p(fhiScore())
-    )
+    print(scoreData())
+    scoreData()
   })
   
 }
