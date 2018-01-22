@@ -2,7 +2,8 @@ methodUI <- function(id){
   ns <- NS(id)
   tagList(
     # uiOutput(ns("methodComp"))
-    plotOutput(ns("compareScatter"))
+    plotOutput(ns("compareScatter")),
+    plotOutput(ns("compareBar"))
   )
 }
 
@@ -55,10 +56,18 @@ methodMod <- function(input, output, session, rawData, yearInterval, basePeriod,
   })
   
   output$compareScatter <- renderPlot({
-    myData <- scoreData()
-    print(myData)
+    myData <- copy(scoreData())
     setnames(myData, c("start", "end", "x", "y"))
+    myData <- myData %>% rename()
+    print(myData)
     ggplot(myData, aes(x, y)) + geom_point() + xlab(methodSel()[[1]]) + ylab(methodSel()[[2]]) + xlim(c(0,100)) + ylim(c(0,100))
+  })
+  
+  output$compareBar <- renderPlot({
+    plotData <- copy(scoreData())
+    plotData[, plotLabel := paste0(start, "-\n", end)]
+    plotData <- melt(plotData, id.vars = c("start", "end", "plotLabel"))
+    ggplot(plotData, aes(x = plotLabel, y = value, fill = factor(variable))) + geom_bar(stat = "identity", position = "dodge")
   })
   
   output$methodComp <- renderUI({
