@@ -19,6 +19,7 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
      groupCols <- "year"
      myData <- rawData()
    }
+    print(scoreDataClean(myData, groupCols, scoreYears(), metric))
    return(scoreDataClean(myData, groupCols, scoreYears(), metric))
   })
   
@@ -31,7 +32,7 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   score_quant <- reactive({
-    scorer(validScoreData(), scoringYears(), "quant", metric)
+    scorer(validScoreData(), scoringYears(), "quant", metric, basePeriod)
   })
   
   score_trend <- reactive({
@@ -42,6 +43,9 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
   })
   
   output$dataPlot <- renderPlot({
+    validate(
+      need(nrow(graphData()) != 0, "No data for slected year")
+    )
     if("name" %in% names(graphData())){
       ggplot(graphData(), aes(x = year, y = value, color = name)) + geom_point() + stat_smooth(method = "loess")  
     }else{

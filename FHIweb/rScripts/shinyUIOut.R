@@ -1,5 +1,5 @@
-output$snowPlots <- renderUI({
-  if(nrow(aprilSnowRaw()) == 0){
+output$snoPlots <- renderUI({
+  if(nrow(aprilSnoRaw()) == 0){
     h4("No snotel stations for this watershed")
   }else{
     tagList(

@@ -56,11 +56,11 @@ precipRaw <- reactive({
   }
 })
 
-aprilSnowRaw <- reactive({
+aprilSnoRaw <- reactive({
   myReturn <- snoMetrics[["april"]][snoTelKey][HUC8 == input$watershedSel,]
 })
 
-maxSnowRaw <- reactive({
+maxSnoRaw <- reactive({
   myReturn <- snoMetrics[["max"]] %>% left_join(snoTelKey) %>% 
     filter(HUC8 == input$watershedSel) %>% data.table()
 })
@@ -91,4 +91,8 @@ ercProcessed <- reactive({
 
 methodCompare <- reactive({
   list(input$methodSel1, input$methodSel2)
+})
+
+methodOptions <- reactive({
+  list("yearsSel" = input$yearsSel, "rollingWin" = input$rollingWin)
 })
