@@ -16,7 +16,7 @@ scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
   }else{
     value <- funData %>% lapply(function(x)x[year %in% myYears, value] %>% mean())
     if(method == "quant"){
-      myReturn <- quantFHI(funData, metric, value)  
+      myReturn <- quantFHI(funData, metric, value, basePeriod)  
     }else if(method == "FHI"){
       myReturn <- 
         lapply(funData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
@@ -34,11 +34,9 @@ scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
   }
   return(myReturn)
 }
-# myData <- copy(tempSave)
-# validYears <- lapply(myData, "[",, year) %>% 
-#   lapply(function(x)all(c(2015:2015) %in% x)) %>% unlist()
 
-quantFHI <- function(myData, metric, value){
+quantFHI <- function(myData, metric, value, basePeriod){
+    myData <- lapply(myData, function(x)x[year %in% basePeriod$start:basePeriod$end,])
     if(metric == "npp"){
       param <- myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
       myDist <- "kde"
@@ -103,9 +101,11 @@ methodCalc <- function(myData, scoreYearTable, method, metric, basePeriod = NULL
     years <- scoreYearTable$start[i]:scoreYearTable$end[i]
     returnList[[i]] <- scorer(myData = myData, myYears = years, method = method,
                               metric = metric, basePeriod = basePeriod)
+    if(method == "quant"){
+      print(returnList[[i]])
+      print(years)
+    }
   }
-  print(method)
-  print(returnList)
   returnList <- lapply(returnList, function(x)x %>% unlist() %>% mean()) %>% unlist()
   returnList <- cbind(scoreYearTable, "value" = (returnList %>% unlist()))
   setnames(returnList, "value", method)

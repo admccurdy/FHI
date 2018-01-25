@@ -64,7 +64,7 @@ shinyUI(
           scoreUI("tmin"),
           h4("NPP"),
           scoreUI("npp"),
-          uiOutput("snowPlots"),
+          uiOutput("snoPlots"),
           h4("ERC"),
           scoreUI("erc"),
           h4("Critical ERC"),
@@ -86,15 +86,45 @@ shinyUI(
                            selected = "FHI"),
                selectInput("methodSel2", "Select score method 2",
                            choices = list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend"),
-                           selected = "Quantile"),
+                           selected = "FHI"),
                selectInput("yearsSel", "Select the number of years to score on",
-                           choices = 1:10, selected = 5)
+                           choices = 1:10, selected = 5),
+               checkboxInput("rollingWin", "Use a rolling window")
              ),
              mainPanel(id = "methods",
-               h3("Tmax"),
-               methodUI("tmax")
-                     
-                       
-             )
+              tabsetPanel(id = "Method Evals",
+                tabPanel("Tmax",
+                  h3("Tmax"),
+                  methodUI("tmax")
+                ),
+                tabPanel("Tmin",
+                  h3("Tmin"),
+                  methodUI("tmin")
+                 ),
+                tabPanel("Precip",
+                  h3("PreciP"),
+                  methodUI("precip")
+                ),
+                tabPanel("NPP",
+                   h3("NPP"),
+                   methodUI("npp")
+                ),
+                tabPanel("ERC",
+                 h3("ERC"),
+                 methodUI("erc")
+                ),
+                tabPanel("Critical ERC",
+                 h3("Critical ERC"),
+                 methodUI("critERC")
+                ),
+                tabPanel("Max Snow",
+                 h3("Max Snow"),
+                 methodUI("snoMax")
+                ),
+                tabPanel("April 1 Snow",
+                 h3("April 1 Snow"),
+                 methodUI("snoApril")
+                )
+              )
            ))
-))
+)))

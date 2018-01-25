@@ -15,15 +15,22 @@ shinyServer(function(input, output) {
   source("rScripts/shinyUIOut.R", local = T)
   
   # callModule(scoreMod, "precip", rawData = precipRaw, scoreYears, precipBase, metric = "precip")
-  callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tempmax")
+  # callModule(scoreMod, "tmax", rawData = tmaxRaw, scoreYears, tempBase, metric = "tempmax")
   # callModule(scoreMod, "tmin", rawData = tminRaw, scoreYears, tempBase, metric = "tempmin")
-  # callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
-  # callModule(scoreMod, "snoApril", rawData = aprilSnowRaw, scoreYears, precipBase, metric = "snoApril")
-  callModule(scoreMod, "snoMax", rawData = maxSnowRaw, scoreYears, precipBase, metric = "snoMax")
+  callModule(scoreMod, "npp", rawData = nppRaw, scoreYears, nppBase, metric = "npp")
+  # callModule(scoreMod, "snoApril", rawData = aprilSnoRaw, scoreYears, precipBase, metric = "snoApril")
+  # callModule(scoreMod, "snoMax", rawData = maxSnoRaw, scoreYears, precipBase, metric = "snoMax")
   # callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
   # callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
-  
-  callModule(methodMod, "tmax", rawData = tmaxRaw, reactive(input$yearsSel), tempBase, metric = "tmax", methodCompare)
+  # 
+  callModule(methodMod, "precip", rawData = precipRaw, methodOptions, precipBase, metric = "precip", methodCompare)
+  callModule(methodMod, "tmax", rawData = tmaxRaw, methodOptions, tempBase, metric = "tmax", methodCompare)
+  callModule(methodMod, "tmin", rawData = tminRaw, methodOptions, tempBase, metric = "tmin", methodCompare)
+  callModule(methodMod, "npp", rawData = nppRaw, methodOptions, nppBase, metric = "npp", methodCompare)
+  callModule(methodMod, "snoApril", rawData = aprilSnoRaw, methodOptions, precipBase, metric = "snoApril", methodCompare)
+  callModule(methodMod, "snoMax", rawData = maxSnoRaw, methodOptions, precipBase, metric = "snoMax", methodCompare)
+  callModule(methodMod, "erc", rawData = ercRaw, methodOptions, ercBase, metric = "erc", methodCompare)
+  callModule(methodMod, "critERC", rawData = ercProcessed, methodOptions, ercBase, metric = "critERC", methodCompare)
   
   # Table of prior tree observations
   
