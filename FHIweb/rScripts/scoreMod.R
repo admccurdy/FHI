@@ -19,7 +19,6 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
      groupCols <- "year"
      myData <- rawData()
    }
-    print(scoreDataClean(myData, groupCols, scoreYears(), metric))
    return(scoreDataClean(myData, groupCols, scoreYears(), metric))
   })
   

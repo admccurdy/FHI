@@ -12,14 +12,17 @@ methodUI <- function(id){
 
 methodMod <- function(input, output, session, rawData, methodOptions, basePeriod, metric, methodSel){
   validScoreData <- reactive({
+    myData <- rawData()
     if("name" %in% names(rawData())){
       myData[, base := year %in% basePeriod$start:basePeriod$end]
+      validStations <- myData %>% group_by(name) %>% summarise(base = sum(base)) %>% filter(base >= 10)
+      myData <- myData[name %in% validStations$name,]
       groupCols <- c("year", "name")
       myData <- multiStationClean(rawData(), myData$name)
     }else{
       groupCols <- "year"
-      myData <- rawData()
     }
+    print("hello")
     return(scoreDataClean(myData, groupCols, list("start" = 2000, "end" = 2001), metric))
   })
   

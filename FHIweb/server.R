@@ -24,7 +24,7 @@ shinyServer(function(input, output) {
   callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
   callModule(scoreMod, "streamV", rawData = streamVolume, scoreYears, precipBase, metric = "streamV")
   callModule(scoreMod, "streamP", rawData = peakVolume, scoreYears, precipBase, metric = "streamP")
-  
+
   callModule(methodMod, "precip", rawData = precipRaw, methodOptions, precipBase, metric = "precip", methodCompare)
   callModule(methodMod, "tmax", rawData = tmaxRaw, methodOptions, tempBase, metric = "tmax", methodCompare)
   callModule(methodMod, "tmin", rawData = tminRaw, methodOptions, tempBase, metric = "tmin", methodCompare)
