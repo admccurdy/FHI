@@ -22,6 +22,8 @@ shinyServer(function(input, output) {
   callModule(scoreMod, "snoMax", rawData = maxSnoRaw, scoreYears, precipBase, metric = "snoMax")
   callModule(scoreMod, "erc", rawData = ercRaw, scoreYears, ercBase, metric = "erc")
   callModule(scoreMod, "critERC", rawData = ercProcessed, scoreYears, ercBase, metric = "critERC")
+  callModule(scoreMod, "streamV", rawData = streamVolume, scoreYears, precipBase, metric = "streamV")
+  callModule(scoreMod, "streamP", rawData = peakVolume, scoreYears, precipBase, metric = "streamP")
   
   callModule(methodMod, "precip", rawData = precipRaw, methodOptions, precipBase, metric = "precip", methodCompare)
   callModule(methodMod, "tmax", rawData = tmaxRaw, methodOptions, tempBase, metric = "tmax", methodCompare)
@@ -31,6 +33,7 @@ shinyServer(function(input, output) {
   callModule(methodMod, "snoMax", rawData = maxSnoRaw, methodOptions, precipBase, metric = "snoMax", methodCompare)
   callModule(methodMod, "erc", rawData = ercRaw, methodOptions, ercBase, metric = "erc", methodCompare)
   callModule(methodMod, "critERC", rawData = ercProcessed, methodOptions, ercBase, metric = "critERC", methodCompare)
+  callModule(methodMod, "streamV", rawData = streamVolume, methodOptions, precipBase, metric = "streamV", methodCompare)
   
   # Table of prior tree observations
   

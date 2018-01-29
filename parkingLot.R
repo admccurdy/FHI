@@ -111,3 +111,6 @@ temp %>% group_by_at(groupCol) %>% summarise(value = mean(b))
 plotData[, plotLabel := paste0(start, "-\n", end)]
 plotData <- melt(plotData, id.vars = c("start", "end", "plotLabel"))
 ggplot(plotData, aes(x = plotLabel, y = value, fill = factor(variable))) + geom_bar(stat = "identity", position = "dodge")
+
+streamFlows <- readRDS("FHIweb/data/streamflow/coDailyFlow.rds")
+gaugeSites <- readRDS("FHIweb/data/streamflow/coGaugeSites.rds")

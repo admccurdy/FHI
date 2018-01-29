@@ -68,7 +68,11 @@ shinyUI(
           h4("ERC"),
           scoreUI("erc"),
           h4("Critical ERC"),
-          scoreUI("critERC")
+          scoreUI("critERC"),
+          h4("Stream Volume"),
+          scoreUI("streamV"),
+          h4("Peak Runoff Day"),
+          scoreUI("streamP")
         ),
         tabPanel("Insect & Disease",
           uiOutput("insectMapOut")
@@ -124,6 +128,10 @@ shinyUI(
                 tabPanel("April 1 Snow",
                  h3("April 1 Snow"),
                  methodUI("snoApril")
+                ),
+                tabPanel("Stream Volume",
+                 h3("Stream Volume"),
+                 methodUI("streamV")
                 )
               )
            ))

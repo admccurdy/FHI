@@ -42,6 +42,9 @@ dailyDischarge <-readRDS("data/streamflow/coDailyFlow.rds")
 watershedKey <- readRDS("data/baseData/watershedKey.RDS")
 insectSF2 <- readRDS("data/insects/insectData.RDS")
 clipShapeDT <- readRDS("data/insects/clipShapeDT.RDS")
+avgAnDis <- readRDS("data/streamflow/avgAnDis.rds")
+coPeak <- readRDS("data/streamflow/coPeak.rds")
+gaugeSites <- readRDS("data/streamflow/coGaugeSites.rds")
 
 # Load SQL Connection----------------------------------------------------------
 # dbiConn <- dbConnect(odbc(),

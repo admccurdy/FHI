@@ -65,6 +65,14 @@ maxSnoRaw <- reactive({
     filter(HUC8 == input$watershedSel) %>% data.table()
 })
 
+streamVolume <- reactive({
+  myReturn <- avgAnDis[HUC8 == input$watershedSel,]
+})
+
+peakVolume <- reactive({
+  myReturn <- coPeak[HUC8 == input$watershedSel,]
+})
+
 ercRaw <- reactive({
   ercStations <- ercStationKey[HUC8 == input$watershedSel,]
   myReturn <- coERC[.(ercStations$station),] %>% split(by = "station")
