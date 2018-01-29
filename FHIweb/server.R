@@ -34,6 +34,7 @@ shinyServer(function(input, output) {
   callModule(methodMod, "erc", rawData = ercRaw, methodOptions, ercBase, metric = "erc", methodCompare)
   callModule(methodMod, "critERC", rawData = ercProcessed, methodOptions, ercBase, metric = "critERC", methodCompare)
   callModule(methodMod, "streamV", rawData = streamVolume, methodOptions, precipBase, metric = "streamV", methodCompare)
+  callModule(methodMod, "streamP", rawData = peakVolume, methodOptions, precipBase, metric = "streamP", methodCompare)
   
   # Table of prior tree observations
   

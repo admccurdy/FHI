@@ -132,6 +132,10 @@ shinyUI(
                 tabPanel("Stream Volume",
                  h3("Stream Volume"),
                  methodUI("streamV")
+                ),
+                tabPanel("Peak Timing",
+                 h3("Timing of Peak Streamflow"),
+                 methodUI("streamP")
                 )
               )
            ))
