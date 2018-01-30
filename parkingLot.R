@@ -114,3 +114,5 @@ ggplot(plotData, aes(x = plotLabel, y = value, fill = factor(variable))) + geom_
 
 streamFlows <- readRDS("FHIweb/data/streamflow/coDailyFlow.rds")
 gaugeSites <- readRDS("FHIweb/data/streamflow/coGaugeSites.rds")
+
+myECDF <- ecdf(myData[[1]]$value)

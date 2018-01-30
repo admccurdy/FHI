@@ -101,10 +101,6 @@ methodCalc <- function(myData, scoreYearTable, method, metric, basePeriod = NULL
     years <- scoreYearTable$start[i]:scoreYearTable$end[i]
     returnList[[i]] <- scorer(myData = myData, myYears = years, method = method,
                               metric = metric, basePeriod = basePeriod)
-    if(method == "quant"){
-      print(returnList[[i]])
-      print(years)
-    }
   }
   returnList <- lapply(returnList, function(x)x %>% unlist() %>% mean()) %>% unlist()
   returnList <- cbind(scoreYearTable, "value" = (returnList %>% unlist()))

@@ -23,7 +23,7 @@ precipBase <- tempBase <- list("start" = 1980, "end" = 2000)
 nppBase <- list("start" = 2000, "end" = 2010)
 ercBase <- list("start" = 2000, "end" = 2010)
 
-#Load constants
+# Load constants
 
 # 1cfs for 24 hrs to acre ft
 # http://water.nv.gov/programs/planning/dictionary/convert2.pdf
@@ -38,7 +38,7 @@ coERC <- readRDS("data/erc/coERC.rds")
 ercStationKey <- readRDS("data/erc/ercStationKey.rds")
 waterShedsCO <- readRDS("data/baseData/waterShedsCO.RDS")
 gaugeKey <- readRDS("data/streamflow/coGaugeSites.rds")
-dailyDischarge <-readRDS("data/streamflow/coDailyFlow.rds")
+dailyDischarge <- readRDS("data/streamflow/coDailyFlow.rds")
 watershedKey <- readRDS("data/baseData/watershedKey.RDS")
 insectSF2 <- readRDS("data/insects/insectData.RDS")
 clipShapeDT <- readRDS("data/insects/clipShapeDT.RDS")
@@ -53,7 +53,7 @@ gaugeSites <- readRDS("data/streamflow/coGaugeSites.rds")
 #                      database = "FHI",
 #                      uid = "amccurdy@foresthealthindex",
 #                      pwd = "Aces2k12$")
-# 
+#
 # rs <- dbSendQuery(dbiConn, "SELECT * FROM userObs")
 # existingData <- dbFetch(rs)
 # existingData <- data.table(matrix(0, ncol = 5, nrow = 5))

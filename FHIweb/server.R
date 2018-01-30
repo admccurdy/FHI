@@ -1,9 +1,9 @@
 #
-# This is the server logic of a Shiny web application. You can run the 
+# This is the server logic of a Shiny web application. You can run the
 # application by clicking 'Run App' above.
 #
 # Find out more about building applications with Shiny here:
-# 
+#
 #    http://shiny.rstudio.com/
 #
 
@@ -35,24 +35,24 @@ shinyServer(function(input, output) {
   callModule(methodMod, "critERC", rawData = ercProcessed, methodOptions, ercBase, metric = "critERC", methodCompare)
   callModule(methodMod, "streamV", rawData = streamVolume, methodOptions, precipBase, metric = "streamV", methodCompare)
   callModule(methodMod, "streamP", rawData = peakVolume, methodOptions, precipBase, metric = "streamP", methodCompare)
-  
+
   # Table of prior tree observations
-  
+
   # output$existingTable <- renderTable({
   #   returnTable <- treeData()
   #   return(returnTable)
   # })
-  # 
+  #
   # Reactive triggered by pressing upload file button
   myData <- eventReactive(input$uploadFile, {
     inFile <- input$dataFile
     read.csv(inFile$datapath)
   })
-  
+
   output$uploadTable <- renderTable({
     myData()
   })
-  
+
   # output$tableDownload <- downloadHandler(
   #   filename = "treeObs.csv",
   #   content = function(file){
@@ -60,34 +60,36 @@ shinyServer(function(input, output) {
   #   },
   #   contentType = "text/plain"
   # )
-  
+
   output$insectMap <- renderLeaflet({
-    insectColor = colorFactor("Set1", as.factor(as.character(insectsFilter()$DCA1)))
+    insectColor <- colorFactor("Set1", as.factor(as.character(insectsFilter()$DCA1)))
     myMap <- leaflet() %>%
-      addProviderTiles("Esri.NatGeoWorldMap",
-                       options = providerTileOptions(noWrap = TRUE)
+      addProviderTiles(
+        "Esri.NatGeoWorldMap",
+        options = providerTileOptions(noWrap = TRUE)
       ) %>%
       addPolylines(data = waterShedSF(), weight = 2, color = "Black") %>%
-      leaflet::addLegend(pal = insectColor, values = insectsFilter()$DCA1 )
-    
-    if(!is.null(insectsFilter())){
-      myMap <- myMap %>% addPolygons(data = insectsFilter(),stroke = F,
-                                     fillColor = ~insectColor(as.factor(as.character(DCA1))),
-                                     fillOpacity = .5)
+      leaflet::addLegend(pal = insectColor, values = insectsFilter()$DCA1)
+
+    if (!is.null(insectsFilter())) {
+      myMap <- myMap %>% addPolygons(
+        data = insectsFilter(), stroke = F,
+        fillColor = ~insectColor(as.factor(as.character(DCA1))),
+        fillOpacity = .5
+      )
     }
     return(myMap)
   })
-  
+
   # output$insectMap <- renderPlot({
-  #   ggplot(insectsFilter()) + geom_sf(aes(fill = year)) + 
+  #   ggplot(insectsFilter()) + geom_sf(aes(fill = year)) +
   #     theme()
   #   bounds <- st_bbox(clipShapeDT[NAME == "Roaring Fork", geometry])
   #   rfv_base <- get_map(location = bounds)
-  #   ggplot(insectSF2[NAME == "Roaring Fork" & year %in% 2013:2016]) + geom_sf(aes(fill = year)) + 
+  #   ggplot(insectSF2[NAME == "Roaring Fork" & year %in% 2013:2016]) + geom_sf(aes(fill = year)) +
   #     theme(axis.ticks = element_blank(), axis.text = element_blank(),
   #           panel.grid.minor = element_blank(),
   #           panel.background = element_blank()) + geom_sf(data = clipShapeDT[NAME == "Roaring Fork",],
   #                                                         fill = NA)
   # })
-  
 })
