@@ -131,6 +131,29 @@ gridToRaster <- function(grid, rasterTemplate){
   return(raster(grid, template = rasterTemplate))
 }
 
+quantileScore2 <- function(value, params, dist, alpha, scoreRange){
+  value <- as.numeric(value)
+  scoreDist <- (scoreRange$max - scoreRange$min) / 4
+  normScoreRange <- c(scoreRange$min + scoreDist, scoreRange$max - scoreDist)
+  normRange <- (1 - alpha) / 2
+  normRange <- c(normRange, 1 - normRange)
+  quantile <- do.call(paste0("p", dist), c(list(q = value), params))
+  print(quantile)
+  if(quantile %between% normRange){
+    points <- data.frame(x = c(normRange[1], normRange[2]) , 
+                         y =  c(normScoreRange[1], normScoreRange[2]))
+  }else if(quantile < normRange[1]){
+    points <- data.frame(x =  c(0, normRange[1]), y = c(scoreRange$min, scoreRange$min + scoreDist))
+  }else{
+    points <- data.frame(x =  c(1, normRange[2]), y = c(scoreRange$max, scoreRange$max - scoreDist))
+  }
+  coefs <- lm(y ~ x, points)[[1]]
+  names(coefs) <- NULL
+  score <- coefs[2] * quantile + coefs[1]
+  score = 100 - abs(50 - score) * 2
+  return(score)
+}
+
 quantileScore <- function(value, params, dist){
   # Determines quantile and then calculates a score
   # 

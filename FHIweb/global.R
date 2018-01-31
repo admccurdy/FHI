@@ -22,6 +22,7 @@ years <- 1980:2016
 precipBase <- tempBase <- list("start" = 1980, "end" = 2000)
 nppBase <- list("start" = 2000, "end" = 2010)
 ercBase <- list("start" = 2000, "end" = 2010)
+methodOptions <- list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend", "Quantile-2" = "quant2")
 
 # Load constants
 

@@ -94,12 +94,12 @@ shinyUI(
           width = 2,
           selectInput(
             "methodSel1", "Select score method 1",
-            choices = list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend"),
+            choices = methodOptions,
             selected = "FHI"
           ),
           selectInput(
             "methodSel2", "Select score method 2",
-            choices = list("Quantile" = "quant", "FHI" = "FHI", "Trend" = "trend"),
+            choices = methodOptions,
             selected = "FHI"
           ),
           selectInput(

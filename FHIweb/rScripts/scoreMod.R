@@ -34,6 +34,10 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
     scorer(validScoreData(), scoringYears(), "quant", metric, basePeriod)
   })
   
+  score_quant2 <- reactive({
+    scorer(validScoreData(), scoringYears(), "quant2", metric, basePeriod)
+  })
+  
   score_trend <- reactive({
     scorer(validScoreData(), scoringYears(), "trend", metric)
     # myData <- yearData()
@@ -75,7 +79,9 @@ scoreMod <- function(input, output, session, rawData, scoreYears, basePeriod, me
       h5("Your score based on quantile methods is:"),
       HTML(scoreClean(score_quant(), names(validScoreData()))),
       h5("Your score based on trend methods is:"),
-      HTML(scoreClean(score_trend(), names(validScoreData())))
+      HTML(scoreClean(score_trend(), names(validScoreData()))),
+      h5("Your score based on quantile2 methods is:"),
+      HTML(scoreClean(score_quant2(), names(validScoreData())))
     )
   })
 }

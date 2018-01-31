@@ -116,3 +116,26 @@ streamFlows <- readRDS("FHIweb/data/streamflow/coDailyFlow.rds")
 gaugeSites <- readRDS("FHIweb/data/streamflow/coGaugeSites.rds")
 
 myECDF <- ecdf(myData[[1]]$value)
+
+testData <- data.table(quantiles = seq(0, 1, by = .0001), score = 0)
+
+for(i in 1:nrow(testData)){
+  quantile <- testData[i, quantiles]
+  if(quantile %between% normalRange){
+    points <- data.frame(x = c(normRange[1], normRange[2]) , 
+                         y =  c(normScoreRange[1], normScoreRange[2]))
+  }else if(quantile < normRange[1]){
+    points <- data.frame(x =  c(0, normRange[1]), y = c(scoreRange$min, scoreRange$min + scoreDist))
+  }else{
+    points <- data.frame(x =  c(1, normRange[2]), y = c(scoreRange$max, scoreRange$max - scoreDist))
+  }
+  coefs <- lm(y ~ x, points)[[1]]
+  names(coefs) <- NULL
+  testData[i, score := coefs[2] * quantile + coefs[1]] 
+}
+
+ggplot(testData, aes(x = quantiles, y = score)) + geom_point()
+
+t=seq(-100,100,0.1)
+y=(t^2) + 160*t
+plot(t,y,type="l", xlab="time", ylab="Sine wave")

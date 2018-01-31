@@ -51,9 +51,7 @@ methodMod <- function(input, output, session, rawData, methodOptions, basePeriod
   })
   
   fhiScore <- reactive({
-    print("start")
     methodCalc(validScoreData(), scoreIntervals(), "FHI", metric, basePeriod = basePeriod)
-    print("end")
   })
 
   quantScore <- reactive({
@@ -62,6 +60,10 @@ methodMod <- function(input, output, session, rawData, methodOptions, basePeriod
   
   trendScore <- reactive({
     methodCalc(validScoreData(), scoreIntervals(), "trend", metric, basePeriod = basePeriod)
+  })
+  
+  quantScore2 <- reactive({
+    methodCalc(validScoreData(), scoreIntervals(), "quant2", metric, basePeriod = basePeriod)
   })
   
   scoreData <- reactive({
@@ -91,7 +93,9 @@ methodMod <- function(input, output, session, rawData, methodOptions, basePeriod
     myData <- copy(scoreData())
     setnames(myData, c("start", "end", "x", "y"))
     myData <- myData %>% rename()
-    ggplot(myData, aes(x, y)) + geom_point() + xlab(methodSel()[[1]]) + ylab(methodSel()[[2]]) + xlim(c(0,100)) + ylim(c(0,100))
+    ggplot(myData, aes(x, y)) + geom_point() + xlab(methodSel()[[1]]) + 
+      ylab(methodSel()[[2]]) + xlim(c(0,100)) + ylim(c(0,100)) +
+      geom_abline(intercept = 0, slope = 1)
   })
   
   output$compareBar <- renderPlot({

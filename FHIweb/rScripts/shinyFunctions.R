@@ -16,7 +16,9 @@ scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
   }else{
     value <- funData %>% lapply(function(x)x[year %in% myYears, value] %>% mean())
     if(method == "quant"){
-      myReturn <- quantFHI(funData, metric, value, basePeriod)  
+      myReturn <- quantFHI(funData, metric, value, basePeriod, qmethod = 1) 
+    }else if(method == "quant2"){
+      myReturn <- quantFHI(funData, metric, value, basePeriod, qmethod = 2) 
     }else if(method == "FHI"){
       myReturn <- 
         lapply(funData, calcBase, baseStart = basePeriod$start, baseEnd = basePeriod$end) %>%
@@ -35,7 +37,7 @@ scorer <- function(myData, myYears, method, metric, basePeriod = NULL){
   return(myReturn)
 }
 
-quantFHI <- function(myData, metric, value, basePeriod){
+quantFHI <- function(myData, metric, value, basePeriod, qmethod){
     myData <- lapply(myData, function(x)x[year %in% basePeriod$start:basePeriod$end,])
     if(metric == "npp"){
       param <- myData %>% lapply(FUN = function(x)list(fhat = kde(x$value)))
@@ -60,9 +62,17 @@ quantFHI <- function(myData, metric, value, basePeriod){
       myDist <- ifelse(class(param[[1]]) == "list", "kde", 
                        ifelse(class(param[[1]]) == "numeric", "gamma", "none"))
     }
-    myReturn <- 
-      lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
-               round(digits = 2))
+    if(qmethod == 1){
+      myReturn <- 
+        lapply(1:length(value), FUN = function(x)quantileScore(value = value[[x]], params = param[[x]], dist = myDist) %>%
+                 round(digits = 2))  
+    }else if(qmethod == 2){
+      myReturn <- 
+        lapply(1:length(value), FUN = function(x)quantileScore2(value = value[[x]], params = param[[x]], dist = myDist,
+                                                                .95, list(min = 0, max = 100)) %>%
+                 round(digits = 2))
+    }
+    
     return(myReturn)
 }
 
