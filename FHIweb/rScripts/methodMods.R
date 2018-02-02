@@ -4,6 +4,7 @@ methodUI <- function(id){
     # uiOutput(ns("methodComp"))
     plotOutput(ns("compareScatter")),
     plotOutput(ns("compareBar")),
+    plotOutput(ns("scoreDist")),
     downloadButton(ns("downloadData"), "Download Data"),
     downloadButton(ns("downloadScores"), "Download Scores"),
     tableOutput(ns("scoreTable"))
@@ -70,6 +71,25 @@ methodMod <- function(input, output, session, rawData, methodOptions, basePeriod
     merge(methodCalc(validScoreData(), scoreIntervals(), methodSel()[[1]], metric, basePeriod = basePeriod),
           methodCalc(validScoreData(), scoreIntervals(), methodSel()[[2]], metric, basePeriod = basePeriod),
           by = c("start", "end"))
+  })
+  
+  output$scoreDist <- renderPlot({
+    myData <- validScoreData()[[1]]
+    scoreLength <- 200
+    testScores <- seq(from = min(myData$value) - IQR(myData$value), 
+                      to = max(myData$value) + IQR(myData$value),
+                      length.out = scoreLength)
+    testScores <- data.table(year = 1:scoreLength, value = testScores)
+    testIntervals <- data.table(start = testScores$year, end = testScores$year)
+    testScores <- list(rbind(testScores, myData))
+    testResults <- methodCalc(testScores, testIntervals, methodSel()[[1]], metric,
+                              basePeriod = basePeriod)
+    testResults[, start := NULL]
+    setnames(testResults, "end", "year")
+    testResults <- merge(testResults, testScores[[1]], by = "year", all.y = F)
+    ggplot(testResults, aes(x = value, y = get(methodSel()[[1]]))) + geom_point() +
+      labs(title = "Score Distribution")
+    
   })
   
   scoreDisplay <- reactive({
