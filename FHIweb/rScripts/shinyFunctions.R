@@ -50,6 +50,7 @@ quantFHI <- function(myData, metric, value, basePeriod, qmethod){
       param <- 
         tryCatch({
           myData %>% lapply(FUN = function(x)fitdistr(x$value, "gamma")[[1]])
+          # myData %>% lapply(FUN = function(x)fgev(x$value)[[1]])
         }, error = function(e){
           # print(paste("dist error", e))
           tryCatch({
