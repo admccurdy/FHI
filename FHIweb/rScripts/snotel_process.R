@@ -1,7 +1,7 @@
 
 # Load list of GHCND Station
-load("F:/Documents/ACES/Data/ghcndStations.RData")
 watershedMap <- st_read("F:/Documents/ACES/Maps/hydrologic_units/wbdhu8_a_co.shp")
+stationList <- readRDS("FHIweb/data/baseData/stationList.RDS")
 
 # Subset into for snowtel and turn into simple feature
 snowTelList <- stationList[state == "CO",]
