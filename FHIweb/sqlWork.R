@@ -1,8 +1,6 @@
 library(odbc)
 library(DBI)
 
-
-
 dbiConn <- dbConnect(odbc(), 
                      driver = "SQL Server",
                      server = "tcp:foresthealthindex.database.windows.net,1433",

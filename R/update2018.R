@@ -1,4 +1,5 @@
 library(dataRetrieval)
+source("R/coopFunctions.R")
 
 snowTelData <- snowTelData %>% left_join(snoTelKey)
 snowTelData <- data.table(snowTelData)

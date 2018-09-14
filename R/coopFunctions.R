@@ -167,3 +167,37 @@ tempToF <- function(stationData){
   stationData[, value := as.numeric(value)]
   stationData[element %in% c("TMAX", "TAVG", "TMIN"), value := (value/10 * 9/5) + 32]
 }
+
+loadYears <- function(stationIDs, years){
+  stationList <- vector("list", length(years))
+  for(i in 1:length(years)){
+    destFile <- paste0("temp", fileExt)
+    download.file(paste0(siteURL, years[i], fileExt), destFile, mode = "wb")
+    stationList[[i]] <- read_csv(destFile, col_names = F) %>% data.table()
+  }
+  stationList %<>% rbindlist()
+  stationList <- stationList[, 1:4]
+  setnames(stationList, c("id", "date", "element", "value"))
+  stationList <- stationList[id %in% stationIDs & element == "WESD",]
+  stationList[, date := ymd(date)]
+  stationList[, c("year", "month", "day") := list(year(date), month(date), day(date))]
+  stationList[, date := NULL]
+  return(stationList)
+}
+
+snoProcess <- function(snoData){
+  snoData[, waterYear := ifelse(month > 9, year + 1, year)]
+  
+  # Create variabe to identify complete years and merge with snowtel data
+  snotelComplete <- snoData %>% select(id, waterYear, month) %>% unique() %>% group_by(id, waterYear) %>%
+    summarise(complete = n())
+  snoData <- merge(snoData, snotelComplete, by = c("id", "waterYear"))
+  # snoData <- snoData[, complete := ifelse(complete == 12, T, F)]
+  snoData <- snoData[, complete := T]
+  # Create Summary metrics
+  snowMax <- snoData[complete == T, ] %>% group_by(waterYear, id) %>% slice(which.max(value)) %>% 
+    select(-complete) %>% data.table()
+  snowMax <- snowMax[value != 0 & !is.na(value),]
+  snowApril <- snoData[day == 1 & month == 4,][, complete := NULL]
+  return(list("april" = snowApril, "max" = snowMax))
+}

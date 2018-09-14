@@ -6,12 +6,18 @@ library(httr)
 library(lubridate)
 library(readxl)
 library(rgdal)
+library(snow)
+library(doSNOW)
 source("FHIweb/rScripts/processFunctions.R")
+cl <- makeCluster(6, type = "SOCK")
+registerDoSNOW(cl)
 
+# sfInit(parallel = T, 8)
+# sfLibrary(data.table)
  # Process EPA Ozone Data---------------------------------
 
 fileDir <- "FHIweb/data/EPA Ozone"
-# fileList <- dir(fileDir)
+fileList <- dir(fileDir)
 # lapply(fileList, function(x){
 #   filePath <- paste0(fileDir, "/", x)
 #   unzip(filePath, exdir = "FHIweb/data/EPA Ozone")
@@ -21,10 +27,11 @@ fileDir <- "FHIweb/data/EPA Ozone"
 # Read in State CSV files
 csvList <- dir(fileDir)
 csvList <- csvList[grepl(".csv", csvList)]
+# sfExport("csvList", "fileDir")
 coOzone <- lapply(csvList, function(x){
   filePath <- paste0(fileDir, "/", x)
   tempCSV <- fread(filePath)
-  return(tempCSV[`State Code` == "08",])
+  return(tempCSV[`State Code` == "08" | `State Code` == 8,])
 })
 
 # Create large list of all years
@@ -32,6 +39,10 @@ coOzone <- rbindlist(coOzone)
 for(j in c("Longitude", "Latitude")){
   set(coOzone, j = j, value = coOzone[[j]] %>% round(digits = 3))
 }
+
+set(coOzone, j = "County Code", value = coOzone[['County Code']] %>% formatC(width = 3, format = "d", flag = "0"))
+set(coOzone, j = "Site Num", value = coOzone[['Site Num']] %>% formatC(width = 4, format = "d", flag = "0"))
+
 coOzone[, uniqueID := paste0(`County Code`, `Site Num`)]
 
 # Create ozone station list
@@ -39,6 +50,7 @@ ozoneStations <- coOzone[, .(`State Code`, `County Code`, `Site Num`, Latitude,
                              Longitude, Datum, `State Name`, `County Name`, uniqueID)]
 setnames(ozoneStations, c("FIPS_s", "FIPS_c", "siteNum", "latitude", "longitude", "datum",
                     "state", "county", "uniqueID"))
+ozoneStations[, FIPS_s := as.numeric(FIPS_s)]
 ozoneStations <- unique(ozoneStations)
 ozoneStations <- split(ozoneStations, by = "uniqueID")
 
@@ -58,11 +70,10 @@ ozoneStations <- ozoneStations %>% lapply(function(x){
 # Rename State Ozone list and clean up columns
 coOzone <- coOzone[, .(uniqueID, `Date Local`, `Time Local`, `Sample Measurement`, Qualifier)]
 setnames(coOzone, c("uniqueID", "date", "time", "O3_ppm", "flag"))
-
 coOzone <- coOzone[, j = list(O3_ppm = mean(O3_ppm), flag = paste(flag, collapse = ",")), 
             by = list(uniqueID, date, time)]
 
-coOzone[ , date := as.Date(date)]
+coOzone[ , date := as_date(date)]
 coOzone[, time := substr(time, 1, 2) %>% as.numeric()]
 coOzone[, c("day", "month", "year") := list(day(date), month(date), year(date))]
 
@@ -86,13 +97,13 @@ ozoneData <- rbindlist(ozoneData, use.names = T, fill = T)
 write.csv(ozoneData, "aspenOzone.csv", row.names = F)
 
 # Create a unique id to merge with AQS data
-ozoneData[, c("uniqueID", "flag") := list("0978161", "")]
+ozoneData[, c("uniqueID", "flag") := list("0970007", "")]
 ozoneData[, O3_ppm := ppb / 1000]
 
 # Removing temp for now...we might want to use it later but for now it makes merging hard
 ozoneData[, c("tempC", "ppb") := NULL]
 setcolorder(ozoneData, names(coOzone))
-ozoneData[, date := as.Date(date)]
+ozoneData[, date := as_date(date)]
 
  # Combine City and EPA Ozone---------
 coOzone <- rbindlist(list(coOzone, ozoneData), use.names = T)
@@ -103,54 +114,11 @@ setnames(ozoneStations, c("latitude", "longitude"), c("lat", "long"))
 # Add aspen station to rest of state
 ozoneStations <- rbind(ozoneStations, data.table("FIPS_s" = "08", "FIPS_c" = "097", "siteNum" = "8161",
                                                  "lat" = 39.196248, "long" = -106.836380, "state" = "Colorado",
-                                                 "county" = "Pitkin", "uniqueID" = "0978161"))
-
-# Calculate monthly w126 and n100
-cow126 <- coOzone[, j = w126Calc_M(O3_ppm, date, day, time),
-                  by = c("uniqueID", "month", "year")]
-N100 <- coOzone[, j = list(N100 = sum(O3_ppm >= .1, na.rm = T)),
-                by = c("uniqueID", "month", "year")]
-
-plantOzone_M <- merge(cow126, N100, by = c("uniqueID", "month", "year"), all = T)
-
-# Calculate 3-month N100 and w126
-PO_M3 <- lapply(1:nrow(plantOzone_M), FUN = function(x){
-  tempTable <- plantOzone_M[x,]
-  myMonths <- tempTable$month + 2
-  if(myMonths > 12){
-    year2 <- tempTable$year + 1
-    myMonths2 <- 1:(myMonths %% 12)
-    myMonths <- tempTable$month:12
-    tempTable <- plantOzone_M[uniqueID == tempTable$uniqueID  & ((month %in% myMonths & year == tempTable$year) | 
-                                                             (month %in% myMonths2 & year == year2))]
-  }else{
-    tempTable <- plantOzone_M[uniqueID == tempTable$uniqueID &
-                          year == tempTable$year &
-                          month %in% tempTable$month:myMonths]
-  }
-  setorder(tempTable, year, month)
-  myReturn <- data.table(uniqueID = tempTable[1, uniqueID],
-                        startM = tempTable[1, month], 
-                        endM = (tempTable[1, month] + 2) %% 12,
-                        year = tempTable[1, year], 
-                        w126 = ifelse(nrow(tempTable) == 3, sum(tempTable$w126M), NA),
-                        N100 = ifelse(nrow(tempTable) == 3, sum(tempTable$N100), NA))
-  return(myReturn)
-}) %>% rbindlist()
+                                                 "county" = "Pitkin", "uniqueID" = "090007"))
+saveRDS(coOzone, "FHIweb/data/webOzone/rawOzone.RDS")
+saveRDS(ozoneStations, "FHIweb/data/webOzone/ozoneStations.RDS")
 
 
-
-PO_M3[, endM := ifelse(endM == 0, 12, endM)]
-
-# Find Yearly three month maxes
-PO_final <- PO_M3[, j = list(w126_max = max(w126, na.rm = T),
-                                 N100_max = max(N100, na.rm = T)), 
-                       by = c("uniqueID", "year")]
-PO_final <- PO_final[!is.infinite(w126_max) & !is.na(w126_max) &
-                               !is.infinite(N100_max) & !is.na(N100_max),]
-
-
-# Assign Stations to Watersheds
 
 ozoneKey <- pointExtracter(ozoneStations, watershedMapB)
 
@@ -158,6 +126,8 @@ ozoneKey <- pointExtracter(ozoneStations, watershedMapB)
 ozoneFull <- merge(PO_final, ozoneKey, by = "uniqueID", allow.cartesian = T)
 saveRDS(ozoneKey, "FHIweb/data/webOzone/ozoneKey.RDS")
 saveRDS(PO_final, "FHIweb/data/webOzone/ozoneMetrics.RDS")
+
+temp <- 
 
 
 #Creates 3 year w126 statistic NOT RUN

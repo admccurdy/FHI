@@ -191,3 +191,7 @@ trendScore <- function(year, value){
   }
   return(ifelse(returnScore < 0, 0, returnScore))
 }
+
+twoDigit <- function(numericVal){
+  formatC(numericVal, width = 2, format = "d", flag = "0")
+}

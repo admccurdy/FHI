@@ -1,4 +1,9 @@
 library(readxl)
+library(data.table)
+library(raster)
+library(readr)
+library(sf)
+library(dplyr)
 
 # Load data-----------------------------------------------
 # Make sure helper functions below are loaded
@@ -24,7 +29,7 @@ eiaData2 <- lapply(2004:2015, FUN = function(x){
   ext <- ifelse(x >= 2015, ".xlsx", ".xls")
   eiaSheet <- openEnergy(paste0(eiaDirectory, x, "/", tableName, ext ), x) %>% data.table()
   eiaSheet <- processEIA(eiaSheet, eiaKey)
-  eiaSheet <- eia_by_shed(eiaSheet, ws_grid_pop, x)
+  eiaSheet <- eia_by_shed(eiaSheet, coloGridPops, x)
 })
 
 eiaData2 <- eiaData2 %>% rbindlist(use.names = T)

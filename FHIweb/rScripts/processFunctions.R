@@ -125,3 +125,80 @@ dailyToAnnual <- function(dailyData, gaugeSites){
   setkey(avgAnDis, HUC8, site_no)
   return(avgAnDis)
 }
+
+peakProcess <- function(peakData, gaugeSites){
+  peakData <- peakData[site_no %in% gaugeKey$site_no,]
+  peakData <- peakData[, list(site_no, "date" = peak_dt, "discharge_cfs" = peak_va,
+                          "year" = year(peak_dt), day = strftime(peak_dt, format = "%j"))]
+  peakData <- peakData %>% left_join(gaugeSites) %>% data.table()
+  peakData <- peakData[, .(site_no, year, value = day, name = station_nm, discharge_cfs, HUC8)]
+  peakData <- peakData[!is.na(value),]
+  peakData[, value := as.numeric(value)]
+  setkey(peakData, site_no, HUC8)
+  return(peakData)
+}
+
+dlOzone <- function(dlDate){
+  urlBase <- "https://www.colorado.gov/airquality/param_summary.aspx?parametercode=44201&seeddate="
+  urlEnd <- "&export=True"
+  dateText <- paste0(month(dlDate) %>% twoDigit(), "%2f", day(dlDate) %>% twoDigit(), "%2f", year(dlDate))
+  url <- paste0(urlBase, dlDate, urlEnd)
+  ozoneTable <- read_html(url) %>% 
+    html_nodes(xpath = '//*[(@id = "txbExport")]') %>% html_text() %>% read_lines()
+  ozoneTable <- ozoneTable[grepl("\\t", ozoneTable)]
+  ozoneTable <- read.table(text = ozoneTable[1:25], sep = "\t", header = T, stringsAsFactors = F) %>% data.table()
+  for(j in 1:length(ozoneTable))set(ozoneTable, j = j, value = as.integer(ozoneTable[[j]]))
+  ozoneTable[, date := dlDate]
+  ozoneTable <- melt(ozoneTable, id.vars = c("hour", "date"), verbose = F)
+  return(ozoneTable)
+}
+
+plantOzone_3m <- function(plantOzone_M){
+  PO_M3 <- lapply(1:nrow(plantOzone_M), FUN = function(x){
+    tempTable <- plantOzone_M[x,]
+    myMonths <- tempTable$month + 2
+    if(myMonths > 12){
+      year2 <- tempTable$year + 1
+      myMonths2 <- 1:(myMonths %% 12)
+      myMonths <- tempTable$month:12
+      tempTable <- plantOzone_M[uniqueID == tempTable$uniqueID  & ((month %in% myMonths & year == tempTable$year) | 
+                                                                     (month %in% myMonths2 & year == year2))]
+    }else{
+      tempTable <- plantOzone_M[uniqueID == tempTable$uniqueID &
+                                  year == tempTable$year &
+                                  month %in% tempTable$month:myMonths]
+    }
+    setorder(tempTable, year, month)
+    myReturn <- data.table(uniqueID = tempTable[1, uniqueID],
+                           startM = tempTable[1, month], 
+                           endM = (tempTable[1, month] + 2) %% 12,
+                           year = tempTable[1, year], 
+                           w126 = ifelse(nrow(tempTable) == 3, sum(tempTable$w126M), NA),
+                           N100 = ifelse(nrow(tempTable) == 3, sum(tempTable$N100), NA))
+    return(myReturn)
+  }) %>% rbindlist()
+  
+  
+  
+  PO_M3[, endM := ifelse(endM == 0, 12, endM)]
+  
+  # Find Yearly three month maxes
+  PO_final <- PO_M3[, j = list(w126_max = max(w126, na.rm = T),
+                               N100_max = max(N100, na.rm = T)), 
+                    by = c("uniqueID", "year")]
+  PO_final <- PO_final[!is.infinite(w126_max) & !is.na(w126_max) &
+                         !is.infinite(N100_max) & !is.na(N100_max),]
+  return(PO_final)
+}
+
+o3_wrapper <- function(rawHourData){
+  cow126 <- rawHourData[, j = w126Calc_M(O3_ppm, date, day, time),
+                     by = c("uniqueID", "month", "year")]
+  N100 <- rawHourData[, j = list(N100 = sum(O3_ppm >= .1, na.rm = T)),
+                   by = c("uniqueID", "month", "year")]
+  
+  plantOzone_M <- merge(cow126, N100, by = c("uniqueID", "month", "year"), all = T)
+  
+  plantOzoneFinal <- plantOzone_3m(plantOzone_M)
+  return(plantOzoneFinal)
+}

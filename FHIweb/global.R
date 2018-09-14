@@ -12,7 +12,7 @@ library(sf)
 library(leaflet)
 library(ks)
 library(dtplyr)
-# library(fevd)
+
 
 source("rScripts/scoreMod.R")
 source("rScripts/methodMods.R")
